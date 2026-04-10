@@ -12,7 +12,7 @@ AI-assisted development generates code through ephemeral conversations. Without 
 
 ```bash
 # In Claude Code:
-/plugin marketplace add <your-github-user>/claude-skills
+/plugin marketplace add fonto/claude-skills
 /plugin install doc-sync@claude-skills
 ```
 
