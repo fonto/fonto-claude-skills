@@ -8,6 +8,6 @@
 ## {YYYY-MM-DD} — {Short description}
 
 - **What changed:** {Functional description of the change}
-- **Why:** {Rationale — [Déclaré] if provided, [À confirmer] if unknown}
+- **Why:** {Rationale — [Declared] if provided, [To confirm] if unknown}
 - **Impact:** {Which features/blocks are affected}
 - **Doc updated:** {List of docs/*.md files modified}

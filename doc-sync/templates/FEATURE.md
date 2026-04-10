@@ -4,7 +4,7 @@
 
 ## Purpose
 
-[À confirmer] {What this functional block does and why it exists.}
+[To confirm] {What this functional block does and why it exists.}
 
 ## Behavior
 
@@ -18,18 +18,18 @@
 
 ### {Sub-feature or flow 2}
 
-[Inférence] {Describe the expected behavior.}
+[Inference] {Describe the expected behavior.}
 
 ## Business Rules
 
-[À confirmer] {List the business rules that govern this feature.}
+[To confirm] {List the business rules that govern this feature.}
 
 1. {Rule 1}
 2. {Rule 2}
 
 ## Edge Cases
 
-[Inférence] {Known edge cases and how they're handled.}
+[Inference] {Known edge cases and how they're handled.}
 
 - {Edge case 1}: {handling}
 - {Edge case 2}: {handling}
@@ -42,4 +42,4 @@
 
 ## Open Questions
 
-- [ ] {Anything marked [À confirmer] that needs resolution}
+- [ ] {Anything marked [To confirm] that needs resolution}

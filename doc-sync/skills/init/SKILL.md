@@ -1,11 +1,11 @@
 ---
-name: doc-init
-description: "Use when retrodocumenting an existing codebase for the first time. Analyzes the full project structure, generates a complete docs/ directory with OVERVIEW, ARCHITECTURE, per-feature docs, and a coverage map. Trigger with /functional-doc-sync:doc-init"
+name: init
+description: "Use when retrodocumenting an existing codebase for the first time. Analyzes the full project structure, generates a complete docs/ directory with OVERVIEW, ARCHITECTURE, per-feature docs, and a coverage map. Trigger with /doc-sync:init"
 ---
 
-# doc-init — Retrodocument an Existing Codebase
+# init — Retrodocument an Existing Codebase
 
-**Announce:** "I'm using the functional-doc-sync plugin to retrodocument this project."
+**Announce:** "I'm using the doc-sync plugin to retrodocument this project."
 
 ## Epistemic Tags
 
@@ -92,12 +92,12 @@ Output a coverage table and action items list.
 
 - Count `[To confirm]` and `[Inference]` items
 - List the top priority items
-- Ask: "I found N items that need human confirmation. Want to run `/functional-doc-sync:doc-interview` to clarify them?"
+- Ask: "I found N items that need human confirmation. Want to run `/doc-sync:interview` to clarify them?"
 
 ## Output
 
 - Complete `docs/` directory
-- All files committed to git with message: `docs: initial retrodocumentation via doc-init`
+- All files committed to git with message: `docs: initial retrodocumentation via doc-sync:init`
 
 ## Key Rules
 

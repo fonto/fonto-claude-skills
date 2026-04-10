@@ -2,7 +2,7 @@
 
 **Date:** {YYYY-MM-DD}
 **Status:** {Proposed | Accepted | Deprecated | Superseded by NNN}
-**Source:** {[Déclaré] — who provided this | [Inférence] — deduced from code}
+**Source:** {[Declared] — who provided this | [Inference] — deduced from code}
 
 ## Context
 

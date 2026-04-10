@@ -1,11 +1,11 @@
 ---
-name: doc-coverage
-description: "Use to measure documentation completeness. Inventories code surface vs documented surface, computes coverage percentage and epistemic tag distribution, generates COVERAGE.md. Trigger with /functional-doc-sync:doc-coverage"
+name: coverage
+description: "Use to measure documentation completeness. Inventories code surface vs documented surface, computes coverage percentage and epistemic tag distribution, generates COVERAGE.md. Trigger with /doc-sync:coverage"
 ---
 
-# doc-coverage — Measure Documentation Completeness
+# coverage — Measure Documentation Completeness
 
-**Announce:** "I'm using the functional-doc-sync plugin to measure documentation coverage."
+**Announce:** "I'm using the doc-sync plugin to measure documentation coverage."
 
 ## Epistemic Tags
 
@@ -98,7 +98,7 @@ Stage and commit: `docs: coverage report updated`
 
 ## Key Rules
 
-- **Group by business domain** — not by technical layer (don't report "models: 80%, routes: 60%")
+- **Group by business domain** — not by technical layer
 - **Compute a confidence score** — weighted by tag reliability, gives a single number to track over time
 - **Prioritize action items** — undocumented high-traffic blocks first, suspect inferences in edge cases last
 - **Track trends** — if previous COVERAGE.md exists, note improvements or regressions

@@ -1,11 +1,11 @@
 ---
-name: doc-challenge
-description: "Use for periodic review or after major refactoring. Cross-references documentation against current code, identifies inconsistencies, dead docs, undocumented features, and suspect inferences. Trigger with /functional-doc-sync:doc-challenge"
+name: challenge
+description: "Use for periodic review or after major refactoring. Cross-references documentation against current code, identifies inconsistencies, dead docs, undocumented features, and suspect inferences. Trigger with /doc-sync:challenge"
 ---
 
-# doc-challenge — Verify Documentation Accuracy
+# challenge — Verify Documentation Accuracy
 
-**Announce:** "I'm using the functional-doc-sync plugin to challenge the documentation against the current code."
+**Announce:** "I'm using the doc-sync plugin to challenge the documentation against the current code."
 
 ## Epistemic Tags
 
@@ -85,8 +85,8 @@ Output a structured report:
 
 ### Step 5: Suggest Next Steps
 
-- If many `[To confirm]` items: suggest `/functional-doc-sync:doc-interview`
-- If many undocumented modules: suggest targeted `/functional-doc-sync:doc-init` on specific directories
+- If many `[To confirm]` items: suggest `/doc-sync:interview`
+- If many undocumented modules: suggest targeted `/doc-sync:init` on specific directories
 - Update COVERAGE.md
 
 **Commit:** `docs: challenge review — N issues found, M auto-fixed`

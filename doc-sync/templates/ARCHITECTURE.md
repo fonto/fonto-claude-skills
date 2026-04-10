@@ -1,6 +1,6 @@
 # Architecture — {Project Name}
 
-> [Code] / [Inférence] Auto-generated. Last updated: {date}
+> [Code] / [Inference] Auto-generated. Last updated: {date}
 
 ## Component Map
 
@@ -12,7 +12,7 @@
 
 ## Data Flow
 
-[Inférence] {Describe the main data flows through the system. Use text descriptions — diagrams can be added later.}
+[Inference] {Describe the main data flows through the system. Use text descriptions — diagrams can be added later.}
 
 ### Primary Flow: {name}
 

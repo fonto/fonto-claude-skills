@@ -1,4 +1,4 @@
-# functional-doc-sync
+# doc-sync
 
 A Claude Code plugin that maintains functional documentation in sync with code evolution.
 
@@ -13,7 +13,7 @@ AI-assisted development generates code through ephemeral conversations. Without 
 ```bash
 # In Claude Code:
 /plugin marketplace add <your-github-user>/claude-skills
-/plugin install functional-doc-sync@claude-skills
+/plugin install doc-sync@claude-skills
 ```
 
 Always uses the latest version from the repo.
@@ -21,33 +21,33 @@ Always uses the latest version from the repo.
 ### Local development / testing
 
 ```bash
-claude --plugin-dir /path/to/functional-doc-sync
+claude --plugin-dir /path/to/doc-sync
 ```
 
 ### Manual
 
-Copy the `functional-doc-sync/` folder to `~/.claude/skills/` (personal) or `.claude/skills/` in your project (project-scoped).
+Copy the `doc-sync/` folder to `~/.claude/skills/` (personal) or `.claude/skills/` in your project (project-scoped).
 
 ## The 5 Skills
 
-All skills are namespaced under `functional-doc-sync`:
+All skills are namespaced under `doc-sync`:
 
 | Command | When to use | Duration |
 |---------|------------|----------|
-| `/functional-doc-sync:doc-init` | First run on an existing project | 5-20 min |
-| `/functional-doc-sync:doc-update` | After each functional change | 1-3 min |
-| `/functional-doc-sync:doc-interview` | To capture tacit knowledge | 5-30 min (interactive) |
-| `/functional-doc-sync:doc-challenge` | Periodic review or post-refactoring | 3-10 min |
-| `/functional-doc-sync:doc-coverage` | Measure completeness | 1-2 min |
+| `/doc-sync:init` | First run on an existing project | 5-20 min |
+| `/doc-sync:update` | After each functional change | 1-3 min |
+| `/doc-sync:interview` | To capture tacit knowledge | 5-30 min (interactive) |
+| `/doc-sync:challenge` | Periodic review or post-refactoring | 3-10 min |
+| `/doc-sync:coverage` | Measure completeness | 1-2 min |
 
 ## Quick Start
 
 ### Retrodocument an existing project
 
 ```
-you    → /functional-doc-sync:doc-init
+you    → /doc-sync:init
 claude → [analyzes code, generates entire docs/ structure]
-claude → "I have 14 [To confirm] items. Want to run doc-interview?"
+claude → "I have 14 [To confirm] items. Want to run doc-sync:interview?"
 you    → "yes"
 claude → [asks questions one at a time about unclear areas]
 ```
@@ -57,7 +57,7 @@ claude → [asks questions one at a time about unclear areas]
 ```
 you    → "Add a password reset endpoint"
 claude → [codes the endpoint]
-you    → /functional-doc-sync:doc-update
+you    → /doc-sync:update
 claude → [updates docs/features/auth.md + CHANGELOG-FUNCTIONAL.md]
 you    → "commit"
 claude → [commits code + doc together]
@@ -66,11 +66,11 @@ claude → [commits code + doc together]
 ### Weekly review
 
 ```
-you    → /functional-doc-sync:doc-challenge
+you    → /doc-sync:challenge
 claude → [report: 2 inconsistencies, 1 dead doc, 3 undocumented features]
 you    → "fix what you can"
 claude → [fixes obvious issues, flags the rest as [To confirm]]
-you    → /functional-doc-sync:doc-coverage
+you    → /doc-sync:coverage
 claude → [generates coverage map]
 ```
 
@@ -93,9 +93,9 @@ The AI reads code and deduces intentions. Sometimes it's right, sometimes not. T
 ### Maturation workflow
 
 ```
-[Inference]  → doc-interview → [Declared]   (human confirmation)
-[Inference]  → doc-challenge  → [Code]       (verified against current code)
-[To confirm] → doc-interview → [Declared]    (resolved by a human)
+[Inference]  → doc-sync:interview → [Declared]   (human confirmation)
+[Inference]  → doc-sync:challenge  → [Code]       (verified against current code)
+[To confirm] → doc-sync:interview → [Declared]    (resolved by a human)
 ```
 
 Goal: maximize `[Code]` and `[Declared]`, minimize `[To confirm]`.
@@ -119,10 +119,10 @@ docs/
 ## Best Practices
 
 **Do:**
-- Run `doc-update` after each functional change (not pure refactors)
-- Run `doc-challenge` at least once a week on an active project
+- Run `doc-sync:update` after each functional change (not pure refactors)
+- Run `doc-sync:challenge` at least once a week on an active project
 - Commit doc and code together (same commit)
-- Use `doc-interview` when a business colleague is available
+- Use `doc-sync:interview` when a business colleague is available
 
 **Don't:**
 - Try to document everything at once — iterate
@@ -133,23 +133,23 @@ docs/
 ## Plugin Structure
 
 ```
-functional-doc-sync/
+doc-sync/
 ├── .claude-plugin/
-│   └── plugin.json          # Plugin manifest
+│   └── plugin.json
 ├── skills/
-│   ├── doc-init/SKILL.md
-│   ├── doc-update/SKILL.md
-│   ├── doc-interview/SKILL.md
-│   ├── doc-challenge/SKILL.md
-│   └── doc-coverage/SKILL.md
+│   ├── init/SKILL.md
+│   ├── update/SKILL.md
+│   ├── interview/SKILL.md
+│   ├── challenge/SKILL.md
+│   └── coverage/SKILL.md
 ├── templates/
 │   ├── OVERVIEW.md
 │   ├── ARCHITECTURE.md
 │   ├── FEATURE.md
 │   ├── DECISION.md
 │   └── CHANGELOG-FUNCTIONAL.md
-├── LICENSE                   # CC BY-SA 4.0
-└── README.md                 # This file
+├── LICENSE
+└── README.md
 ```
 
 ## License

@@ -4,7 +4,7 @@
 
 ## Purpose
 
-[À confirmer] {What this project does and for whom.}
+[To confirm] {What this project does and for whom.}
 
 ## Stack
 
@@ -16,7 +16,7 @@
 
 ## Architecture Summary
 
-[Inférence] {High-level architecture pattern: monolith, microservices, serverless, etc.}
+[Inference] {High-level architecture pattern: monolith, microservices, serverless, etc.}
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed component map.
 

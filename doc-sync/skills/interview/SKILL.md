@@ -1,11 +1,11 @@
 ---
-name: doc-interview
-description: "Use to capture tacit knowledge from developers or business stakeholders. Scans docs for [To confirm] and [Inference] items, asks targeted questions one at a time, and upgrades tags to [Declared] upon confirmation. Trigger with /functional-doc-sync:doc-interview"
+name: interview
+description: "Use to capture tacit knowledge from developers or business stakeholders. Scans docs for [To confirm] and [Inference] items, asks targeted questions one at a time, and upgrades tags to [Declared] upon confirmation. Trigger with /doc-sync:interview"
 ---
 
-# doc-interview — Capture Tacit Knowledge
+# interview — Capture Tacit Knowledge
 
-**Announce:** "I'm using the functional-doc-sync plugin to interview you about documentation gaps."
+**Announce:** "I'm using the doc-sync plugin to interview you about documentation gaps."
 
 ## Epistemic Tags
 
@@ -40,7 +40,7 @@ For each item:
 - Quote the current documented assertion with its tag
 - State which file and section it's from
 - Ask: "Is this correct? If not, what's the actual behavior/rationale?"
-- Accept freeform answers — don't force multiple choice
+- Accept freeform answers
 
 **Example:**
 ```

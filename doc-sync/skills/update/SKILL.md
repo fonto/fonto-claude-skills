@@ -1,11 +1,11 @@
 ---
-name: doc-update
-description: "Use after any code change with functional impact to sync documentation. Analyzes git diff, updates affected feature docs, and adds a functional changelog entry. Trigger with /functional-doc-sync:doc-update"
+name: update
+description: "Use after any code change with functional impact to sync documentation. Analyzes git diff, updates affected feature docs, and adds a functional changelog entry. Trigger with /doc-sync:update"
 ---
 
-# doc-update — Post-Change Documentation Sync
+# update — Post-Change Documentation Sync
 
-**Announce:** "I'm using the functional-doc-sync plugin to update documentation after this change."
+**Announce:** "I'm using the doc-sync plugin to update documentation after this change."
 
 ## Epistemic Tags
 
