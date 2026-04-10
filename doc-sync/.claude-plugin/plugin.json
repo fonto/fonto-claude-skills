@@ -4,7 +4,5 @@
   "version": "1.0.0",
   "author": {
     "name": "Olivier"
-  },
-  "license": "CC-BY-SA-4.0",
-  "repository": "https://github.com/fonto/claude-skills"
+  }
 }
