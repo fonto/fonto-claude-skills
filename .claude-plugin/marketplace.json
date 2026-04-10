@@ -1,6 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "claude-skills",
+  "version": "1.0.0",
+  "description": "Custom Claude Code plugins by Olivier",
   "owner": {
     "name": "Olivier"
   },
@@ -8,10 +10,9 @@
     {
       "name": "doc-sync",
       "description": "Maintain functional documentation in sync with code evolution. Retrodocument existing codebases, keep docs updated after changes, capture tacit knowledge, challenge accuracy, and measure coverage.",
-      "path": "doc-sync",
+      "source": "./doc-sync",
       "version": "1.0.0",
-      "category": "documentation",
-      "keywords": ["documentation", "retrodoc", "functional-spec", "doc-sync"]
+      "category": "documentation"
     }
   ]
 }
