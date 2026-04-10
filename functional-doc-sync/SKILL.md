@@ -20,18 +20,18 @@ Every substantive statement in generated documentation MUST be prefixed with one
 | Tag | Meaning | Source |
 |-----|---------|--------|
 | `[Code]` | Directly verifiable in source code | Code analysis |
-| `[Inférence]` | Deduced from code patterns, naming, structure | AI interpretation |
-| `[À confirmer]` | Requires human/business validation | Uncertain or ambiguous |
-| `[Déclaré]` | Explicitly stated by a human (dev, PO, business) | Interview or input |
-| `[Décision]` | Architecture or business decision with rationale | ADR or declared |
+| `[Inference]` | Deduced from code patterns, naming, structure | AI interpretation |
+| `[To confirm]` | Requires human/business validation | Uncertain or ambiguous |
+| `[Declared]` | Explicitly stated by a human (dev, PO, business) | Interview or input |
+| `[Decision]` | Architecture or business decision with rationale | ADR or declared |
 
-**Rule:** When in doubt, use `[À confirmer]`. Never present an inference as fact.
+**Rule:** When in doubt, use `[To confirm]`. Never present an inference as fact.
 
 ## Documentation Structure
 
 ```
 docs/
-├── OVERVIEW.md              # Vision, stack, architecture macro
+├── OVERVIEW.md              # Vision, stack, macro architecture
 ├── ARCHITECTURE.md          # Components, dependencies, data flows
 ├── CHANGELOG-FUNCTIONAL.md  # Functional evolution journal
 ├── COVERAGE.md              # Auto-generated coverage map
@@ -67,15 +67,15 @@ docs/
    - Generate `OVERVIEW.md` from project config + top-level analysis
    - Generate `ARCHITECTURE.md` with component map and data flows
    - For each identified functional block, create `docs/features/<block>.md`
-   - Tag everything appropriately: `[Code]` for verifiable facts, `[Inférence]` for deductions
+   - Tag everything appropriately: `[Code]` for verifiable facts, `[Inference]` for deductions
 
 4. **Generate initial COVERAGE.md**
    - Cross-reference code modules vs documented features
    - Flag undocumented areas
-   - Flag all `[À confirmer]` and `[Inférence]` items
+   - Flag all `[To confirm]` and `[Inference]` items
 
 5. **Prompt for interview**
-   - List top `[À confirmer]` items
+   - List top `[To confirm]` items
    - Ask: "Want to run `/doc:interview` to clarify these?"
 
 **Output:** Complete `docs/` directory committed to git.
@@ -96,12 +96,12 @@ docs/
 2. **If functional change detected:**
    - Identify which `docs/features/*.md` file(s) are impacted
    - Update the relevant sections, preserving existing epistemic tags
-   - New content tagged `[Code]` if verifiable, `[Inférence]` if deduced
+   - New content tagged `[Code]` if verifiable, `[Inference]` if deduced
    - Add entry to `CHANGELOG-FUNCTIONAL.md`:
      ```
      ## YYYY-MM-DD — <short description>
      - **What changed:** <functional description>
-     - **Why:** <rationale if known, otherwise [À confirmer]>
+     - **Why:** <rationale if known, otherwise [To confirm]>
      - **Files impacted:** <list>
      - **Doc updated:** <list of docs/*.md files modified>
      ```
@@ -121,7 +121,7 @@ docs/
 **Process:**
 
 1. **Collect open questions**
-   - Scan all `docs/` files for `[À confirmer]` and `[Inférence]` tags
+   - Scan all `docs/` files for `[To confirm]` and `[Inference]` tags
    - Group by feature/topic
    - Prioritize: business rules > architecture decisions > edge cases
 
@@ -131,9 +131,9 @@ docs/
    - Accept freeform answers
 
 3. **Update documentation**
-   - Replace `[À confirmer]`/`[Inférence]` with `[Déclaré]` once confirmed
-   - If corrected, update content + tag as `[Déclaré]`
-   - If still unclear, keep `[À confirmer]` and note the discussion
+   - Replace `[To confirm]`/`[Inference]` with `[Declared]` once confirmed
+   - If corrected, update content + tag as `[Declared]`
+   - If still unclear, keep `[To confirm]` and note the discussion
 
 4. **Record decisions**
    - If an answer reveals an architecture/business decision, create a `docs/decisions/NNN-<topic>.md` ADR:
@@ -144,10 +144,10 @@ docs/
      **Context:** <why was a decision needed>
      **Decision:** <what was decided>
      **Consequences:** <trade-offs, implications>
-     **Source:** [Déclaré] — <who provided this>
+     **Source:** [Declared] — <who provided this>
      ```
 
-**Output:** Updated docs with reduced `[À confirmer]` count.
+**Output:** Updated docs with reduced `[To confirm]` count.
 
 ---
 
@@ -164,7 +164,7 @@ docs/
    - Identify code paths not covered by any doc (undocumented features)
 
 2. **Check inference validity**
-   - Re-evaluate `[Inférence]` tags against current code
+   - Re-evaluate `[Inference]` tags against current code
    - Flag any that seem incorrect or outdated
 
 3. **Produce challenge report**
@@ -173,7 +173,7 @@ docs/
 
 4. **Apply fixes**
    - Auto-fix clear inconsistencies (rename, moved files)
-   - Flag ambiguous issues as `[À confirmer]`
+   - Flag ambiguous issues as `[To confirm]`
    - Prompt for `/doc:interview` on remaining items
 
 **Output:** Challenge report + updated docs.
@@ -203,21 +203,21 @@ docs/
    ## Summary
    - Modules documented: X/Y (Z%)
    - Assertions [Code]: N
-   - Assertions [Inférence]: N
-   - Assertions [À confirmer]: N
-   - Assertions [Déclaré]: N
+   - Assertions [Inference]: N
+   - Assertions [To confirm]: N
+   - Assertions [Declared]: N
 
    ## Coverage by Module
    | Module | Documented | Status | Confidence |
    |--------|-----------|--------|------------|
-   | auth   | ✅ Yes    | Current | 80% [Code], 20% [Inférence] |
-   | payments | ⚠️ Partial | Outdated | 50% [À confirmer] |
+   | auth   | ✅ Yes    | Current | 80% [Code], 20% [Inference] |
+   | payments | ⚠️ Partial | Outdated | 50% [To confirm] |
    | reports | ❌ No     | —       | — |
 
    ## Action Items
    - [ ] Document: reports module
-   - [ ] Confirm: 12 [À confirmer] items in payments
-   - [ ] Review: 5 [Inférence] items in auth (last challenged: never)
+   - [ ] Confirm: 12 [To confirm] items in payments
+   - [ ] Review: 5 [Inference] items in auth (last challenged: never)
    ```
 
 **Output:** `docs/COVERAGE.md` written/updated.
@@ -256,5 +256,5 @@ Use templates from `templates/` subdirectory of this skill when generating initi
 1. Run /doc:challenge
 2. Fix inconsistencies
 3. Run /doc:coverage to check completeness
-4. Run /doc:interview on remaining [À confirmer] items
+4. Run /doc:interview on remaining [To confirm] items
 ```

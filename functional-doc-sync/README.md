@@ -1,100 +1,100 @@
-# functional-doc-sync — Guide Utilisateur
+# functional-doc-sync — User Guide
 
-## Quoi
+## What
 
-Un skill Claude Code qui maintient une documentation fonctionnelle Markdown synchronisée avec le code, dans Git.
+A Claude Code skill that maintains functional Markdown documentation in sync with code, inside Git.
 
-## Pourquoi
+## Why
 
-Le développement assisté par IA génère du code via des conversations éphémères. Sans mécanisme dédié, la documentation dérive du code en quelques jours. Ce skill force la synchronisation en intégrant la doc dans le flux de développement.
+AI-assisted development generates code through ephemeral conversations. Without a dedicated mechanism, documentation drifts from code within days. This skill forces synchronization by integrating doc maintenance into the development flow.
 
-## Prérequis
+## Prerequisites
 
-- Claude Code avec support des custom skills
-- Un projet Git initialisé
-- Ce skill installé dans le répertoire de skills Claude Code
+- Claude Code with custom skill support
+- An initialized Git project
+- This skill installed in your Claude Code skills directory
 
 ## Installation
 
-Copier le dossier `functional-doc-sync/` dans votre répertoire de skills Claude Code (ex: `~/.claude/skills/` ou le répertoire configuré).
+Copy the `functional-doc-sync/` folder into your Claude Code skills directory (e.g., `~/.claude/skills/` or your configured path).
 
-## Les 5 Commandes
+## The 5 Commands
 
-| Commande | Quand l'utiliser | Durée typique |
-|----------|-----------------|---------------|
-| `/doc:init` | Premier run sur un projet existant | 5-20 min selon taille |
-| `/doc:update` | Après chaque changement fonctionnel | 1-3 min |
-| `/doc:interview` | Pour capturer le savoir tacite | 5-30 min (interactif) |
-| `/doc:challenge` | Revue périodique ou post-refactoring | 3-10 min |
-| `/doc:coverage` | Mesurer la complétude | 1-2 min |
+| Command | When to use | Typical duration |
+|---------|------------|-----------------|
+| `/doc:init` | First run on an existing project | 5-20 min depending on size |
+| `/doc:update` | After each functional change | 1-3 min |
+| `/doc:interview` | To capture tacit knowledge | 5-30 min (interactive) |
+| `/doc:challenge` | Periodic review or post-refactoring | 3-10 min |
+| `/doc:coverage` | Measure completeness | 1-2 min |
 
-## Workflow Quotidien
+## Daily Workflow
 
-### Scénario typique : développement itératif
-
-```
-toi  → "Ajoute un endpoint de reset password"
-claude → [code le endpoint]
-toi  → "/doc:update"
-claude → [met à jour docs/features/auth.md + CHANGELOG-FUNCTIONAL.md]
-toi  → "commit"
-claude → [commit code + doc ensemble]
-```
-
-### Premier run sur un projet existant
+### Typical scenario: iterative development
 
 ```
-toi  → "/doc:init"
-claude → [analyse le code, génère toute la structure docs/]
-claude → "J'ai 14 items [À confirmer]. Voulez-vous lancer /doc:interview ?"
-toi  → "oui"
-claude → [pose des questions une par une sur les zones d'ombre]
+you    → "Add a password reset endpoint"
+claude → [codes the endpoint]
+you    → "/doc:update"
+claude → [updates docs/features/auth.md + CHANGELOG-FUNCTIONAL.md]
+you    → "commit"
+claude → [commits code + doc together]
 ```
 
-### Revue hebdomadaire
+### First run on an existing project
 
 ```
-toi  → "/doc:challenge"
-claude → [rapport : 2 inconsistances, 1 doc morte, 3 features non documentées]
-toi  → "corrige ce que tu peux"
-claude → [corrige les évidences, flag le reste en [À confirmer]]
-toi  → "/doc:coverage"
-claude → [génère la carte de couverture]
+you    → "/doc:init"
+claude → [analyzes code, generates entire docs/ structure]
+claude → "I have 14 [To confirm] items. Want to run /doc:interview?"
+you    → "yes"
+claude → [asks questions one at a time about unclear areas]
 ```
 
-## Tags Épistémiques
-
-La doc générée utilise des tags pour indiquer la fiabilité de chaque assertion :
-
-- **`[Code]`** — Vérifiable directement dans le code source. Fiable.
-- **`[Inférence]`** — Déduit du code par l'IA. Probablement correct mais à vérifier.
-- **`[À confirmer]`** — Zone d'ombre nécessitant un humain. Prioritaire en revue.
-- **`[Déclaré]`** — Confirmé ou fourni par un humain. Fiable.
-- **`[Décision]`** — Décision d'architecture documentée (ADR). Fiable.
-
-### Pourquoi c'est important
-
-L'IA lit le code et déduit des intentions. Parfois elle a raison, parfois non. Les tags rendent visible le niveau de confiance. Sans eux, la doc paraît autoritaire alors qu'elle contient des hypothèses.
-
-### Workflow de maturation
+### Weekly review
 
 ```
-[Inférence] → /doc:interview → [Déclaré]  (confirmation humaine)
-[Inférence] → /doc:challenge → [Code]      (vérifié contre le code actuel)
-[À confirmer] → /doc:interview → [Déclaré] (résolu par un humain)
+you    → "/doc:challenge"
+claude → [report: 2 inconsistencies, 1 dead doc, 3 undocumented features]
+you    → "fix what you can"
+claude → [fixes obvious issues, flags the rest as [To confirm]]
+you    → "/doc:coverage"
+claude → [generates coverage map]
 ```
 
-L'objectif est de faire tendre la doc vers un maximum de `[Code]` et `[Déclaré]`, minimum de `[À confirmer]`.
+## Epistemic Tags
 
-## Structure de Documentation Générée
+Generated documentation uses tags to indicate the reliability of each assertion:
+
+- **`[Code]`** — Directly verifiable in source code. Reliable.
+- **`[Inference]`** — Deduced from code by the AI. Likely correct but should be verified.
+- **`[To confirm]`** — Unclear area requiring human/business input. Priority for review.
+- **`[Declared]`** — Confirmed or provided by a human. Reliable.
+- **`[Decision]`** — Documented architecture decision (ADR). Reliable.
+
+### Why this matters
+
+The AI reads code and deduces intentions. Sometimes it's right, sometimes not. Tags make the confidence level visible. Without them, documentation looks authoritative while containing hypotheses.
+
+### Maturation workflow
+
+```
+[Inference]  → /doc:interview → [Declared]  (human confirmation)
+[Inference]  → /doc:challenge  → [Code]      (verified against current code)
+[To confirm] → /doc:interview → [Declared]   (resolved by a human)
+```
+
+The goal is to drive documentation toward maximum `[Code]` and `[Declared]`, minimum `[To confirm]`.
+
+## Generated Documentation Structure
 
 ```
 docs/
-├── OVERVIEW.md              # Vision, stack, architecture macro
-├── ARCHITECTURE.md          # Composants, dépendances, flux de données
-├── CHANGELOG-FUNCTIONAL.md  # Journal des évolutions fonctionnelles
-├── COVERAGE.md              # Carte de couverture (auto-générée)
-├── features/                # Un fichier par bloc fonctionnel
+├── OVERVIEW.md              # Vision, stack, macro architecture
+├── ARCHITECTURE.md          # Components, dependencies, data flows
+├── CHANGELOG-FUNCTIONAL.md  # Functional evolution journal
+├── COVERAGE.md              # Coverage map (auto-generated)
+├── features/                # One file per functional block
 │   ├── auth.md
 │   ├── payments.md
 │   └── ...
@@ -103,41 +103,41 @@ docs/
     └── ...
 ```
 
-### Ce que chaque fichier contient
+### What each file contains
 
-- **OVERVIEW.md** — Ce que fait le projet, pour qui, avec quoi (stack). Lu en premier par un nouveau dev ou un agent IA.
-- **ARCHITECTURE.md** — Comment les composants s'articulent. Diagrammes de flux, dépendances entre modules.
-- **features/*.md** — Le détail de chaque bloc fonctionnel : comportement attendu, règles métier, cas limites.
-- **decisions/*.md** — Les "pourquoi" : chaque choix technique ou business significatif documenté avec son contexte et ses conséquences.
-- **CHANGELOG-FUNCTIONAL.md** — Journal chronologique des évolutions *fonctionnelles* (pas un git log technique).
-- **COVERAGE.md** — Tableau de bord : qu'est-ce qui est documenté, à quel niveau de confiance, et qu'est-ce qui manque.
+- **OVERVIEW.md** — What the project does, for whom, with what stack. Read first by any new dev or AI agent.
+- **ARCHITECTURE.md** — How components fit together. Flow diagrams, inter-module dependencies.
+- **features/*.md** — Detail of each functional block: expected behavior, business rules, edge cases.
+- **decisions/*.md** — The "why": each significant technical or business choice documented with its context and consequences.
+- **CHANGELOG-FUNCTIONAL.md** — Chronological journal of *functional* changes (not a technical git log).
+- **COVERAGE.md** — Dashboard: what is documented, at what confidence level, and what is missing.
 
-## Bonnes Pratiques
+## Best Practices
 
-### À faire
+### Do
 
-- Lancer `/doc:update` après chaque changement fonctionnel (pas les refactors purs)
-- Lancer `/doc:challenge` au moins une fois par semaine sur un projet actif
-- Commiter doc et code ensemble (même commit)
-- Utiliser `/doc:interview` quand un collègue métier est disponible — c'est le meilleur moment pour capturer le savoir tacite
+- Run `/doc:update` after each functional change (not pure refactors)
+- Run `/doc:challenge` at least once a week on an active project
+- Commit doc and code together (same commit)
+- Use `/doc:interview` when a business colleague is available — best time to capture tacit knowledge
 
-### À éviter
+### Don't
 
-- Ne pas essayer de tout documenter en une fois — itérer
-- Ne pas supprimer les tags `[À confirmer]` sans les avoir résolus
-- Ne pas documenter l'implémentation technique dans les features (c'est le rôle du code et des commentaires)
-- Ne pas créer un fichier feature par micro-fonctionnalité — grouper par domaine métier
+- Don't try to document everything at once — iterate
+- Don't remove `[To confirm]` tags without resolving them
+- Don't document technical implementation details in features (that's the job of code and comments)
+- Don't create one feature file per micro-feature — group by business domain
 
 ## FAQ
 
-**Q : Et si je fais plusieurs changements avant de lancer `/doc:update` ?**
-Le mode update analyse le diff complet. Plusieurs changements seront traités ensemble. Mais plus le diff est gros, plus le risque d'oubli est élevé. Préférer des updates fréquents.
+**Q: What if I make several changes before running `/doc:update`?**
+The update mode analyzes the full diff. Multiple changes will be processed together. But the larger the diff, the higher the risk of omissions. Prefer frequent updates.
 
-**Q : Le skill fonctionne-t-il avec n'importe quel langage ?**
-Oui. L'analyse se base sur la structure du projet, les fichiers de config, et le code source. Le skill s'adapte à la stack détectée.
+**Q: Does the skill work with any language?**
+Yes. Analysis is based on project structure, config files, and source code. The skill adapts to the detected stack.
 
-**Q : Comment gérer les projets multi-repo ?**
-Chaque repo a sa propre `docs/`. Pour une doc transversale, créer un repo dédié `docs-system` avec des liens vers les docs de chaque repo.
+**Q: How to handle multi-repo projects?**
+Each repo has its own `docs/`. For cross-cutting documentation, create a dedicated `docs-system` repo with links to each repo's docs.
 
-**Q : La doc générée est-elle parfaite ?**
-Non. C'est le point central : les tags épistémiques rendent explicite ce qui est fiable et ce qui ne l'est pas. La doc est un point de départ qui s'améliore par itération.
+**Q: Is the generated documentation perfect?**
+No. That's the central point: epistemic tags make explicit what is reliable and what is not. The documentation is a starting point that improves through iteration.
