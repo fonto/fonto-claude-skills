@@ -1,64 +1,76 @@
-# functional-doc-sync — User Guide
+# functional-doc-sync
 
-## What
-
-A Claude Code skill that maintains functional Markdown documentation in sync with code, inside Git.
+A Claude Code plugin that maintains functional documentation in sync with code evolution.
 
 ## Why
 
-AI-assisted development generates code through ephemeral conversations. Without a dedicated mechanism, documentation drifts from code within days. This skill forces synchronization by integrating doc maintenance into the development flow.
-
-## Prerequisites
-
-- Claude Code with custom skill support
-- An initialized Git project
-- This skill installed in your Claude Code skills directory
+AI-assisted development generates code through ephemeral conversations. Without a dedicated mechanism, documentation drifts from code within days. This plugin forces synchronization by integrating doc maintenance into the development flow.
 
 ## Installation
 
-Copy the `functional-doc-sync/` folder into your Claude Code skills directory (e.g., `~/.claude/skills/` or your configured path).
+### From GitHub (recommended)
 
-## The 5 Commands
+```bash
+# In Claude Code:
+/plugin marketplace add <your-github-user>/claude-skills
+/plugin install functional-doc-sync@claude-skills
+```
 
-| Command | When to use | Typical duration |
-|---------|------------|-----------------|
-| `/doc:init` | First run on an existing project | 5-20 min depending on size |
-| `/doc:update` | After each functional change | 1-3 min |
-| `/doc:interview` | To capture tacit knowledge | 5-30 min (interactive) |
-| `/doc:challenge` | Periodic review or post-refactoring | 3-10 min |
-| `/doc:coverage` | Measure completeness | 1-2 min |
+Always uses the latest version from the repo.
 
-## Daily Workflow
+### Local development / testing
 
-### Typical scenario: iterative development
+```bash
+claude --plugin-dir /path/to/functional-doc-sync
+```
+
+### Manual
+
+Copy the `functional-doc-sync/` folder to `~/.claude/skills/` (personal) or `.claude/skills/` in your project (project-scoped).
+
+## The 5 Skills
+
+All skills are namespaced under `functional-doc-sync`:
+
+| Command | When to use | Duration |
+|---------|------------|----------|
+| `/functional-doc-sync:doc-init` | First run on an existing project | 5-20 min |
+| `/functional-doc-sync:doc-update` | After each functional change | 1-3 min |
+| `/functional-doc-sync:doc-interview` | To capture tacit knowledge | 5-30 min (interactive) |
+| `/functional-doc-sync:doc-challenge` | Periodic review or post-refactoring | 3-10 min |
+| `/functional-doc-sync:doc-coverage` | Measure completeness | 1-2 min |
+
+## Quick Start
+
+### Retrodocument an existing project
+
+```
+you    → /functional-doc-sync:doc-init
+claude → [analyzes code, generates entire docs/ structure]
+claude → "I have 14 [To confirm] items. Want to run doc-interview?"
+you    → "yes"
+claude → [asks questions one at a time about unclear areas]
+```
+
+### Daily workflow: after a change
 
 ```
 you    → "Add a password reset endpoint"
 claude → [codes the endpoint]
-you    → "/doc:update"
+you    → /functional-doc-sync:doc-update
 claude → [updates docs/features/auth.md + CHANGELOG-FUNCTIONAL.md]
 you    → "commit"
 claude → [commits code + doc together]
 ```
 
-### First run on an existing project
-
-```
-you    → "/doc:init"
-claude → [analyzes code, generates entire docs/ structure]
-claude → "I have 14 [To confirm] items. Want to run /doc:interview?"
-you    → "yes"
-claude → [asks questions one at a time about unclear areas]
-```
-
 ### Weekly review
 
 ```
-you    → "/doc:challenge"
+you    → /functional-doc-sync:doc-challenge
 claude → [report: 2 inconsistencies, 1 dead doc, 3 undocumented features]
 you    → "fix what you can"
 claude → [fixes obvious issues, flags the rest as [To confirm]]
-you    → "/doc:coverage"
+you    → /functional-doc-sync:doc-coverage
 claude → [generates coverage map]
 ```
 
@@ -66,11 +78,13 @@ claude → [generates coverage map]
 
 Generated documentation uses tags to indicate the reliability of each assertion:
 
-- **`[Code]`** — Directly verifiable in source code. Reliable.
-- **`[Inference]`** — Deduced from code by the AI. Likely correct but should be verified.
-- **`[To confirm]`** — Unclear area requiring human/business input. Priority for review.
-- **`[Declared]`** — Confirmed or provided by a human. Reliable.
-- **`[Decision]`** — Documented architecture decision (ADR). Reliable.
+| Tag | Meaning | Reliability |
+|-----|---------|-------------|
+| `[Code]` | Directly verifiable in source code | High |
+| `[Inference]` | Deduced from code by the AI | Medium — verify |
+| `[To confirm]` | Unclear, needs human/business input | Low — priority for review |
+| `[Declared]` | Confirmed or provided by a human | High |
+| `[Decision]` | Documented architecture decision (ADR) | High |
 
 ### Why this matters
 
@@ -79,12 +93,12 @@ The AI reads code and deduces intentions. Sometimes it's right, sometimes not. T
 ### Maturation workflow
 
 ```
-[Inference]  → /doc:interview → [Declared]  (human confirmation)
-[Inference]  → /doc:challenge  → [Code]      (verified against current code)
-[To confirm] → /doc:interview → [Declared]   (resolved by a human)
+[Inference]  → doc-interview → [Declared]   (human confirmation)
+[Inference]  → doc-challenge  → [Code]       (verified against current code)
+[To confirm] → doc-interview → [Declared]    (resolved by a human)
 ```
 
-The goal is to drive documentation toward maximum `[Code]` and `[Declared]`, minimum `[To confirm]`.
+Goal: maximize `[Code]` and `[Declared]`, minimize `[To confirm]`.
 
 ## Generated Documentation Structure
 
@@ -96,48 +110,48 @@ docs/
 ├── COVERAGE.md              # Coverage map (auto-generated)
 ├── features/                # One file per functional block
 │   ├── auth.md
-│   ├── payments.md
 │   └── ...
 └── decisions/               # Architecture Decision Records
     ├── 001-choice-of-db.md
     └── ...
 ```
 
-### What each file contains
-
-- **OVERVIEW.md** — What the project does, for whom, with what stack. Read first by any new dev or AI agent.
-- **ARCHITECTURE.md** — How components fit together. Flow diagrams, inter-module dependencies.
-- **features/*.md** — Detail of each functional block: expected behavior, business rules, edge cases.
-- **decisions/*.md** — The "why": each significant technical or business choice documented with its context and consequences.
-- **CHANGELOG-FUNCTIONAL.md** — Chronological journal of *functional* changes (not a technical git log).
-- **COVERAGE.md** — Dashboard: what is documented, at what confidence level, and what is missing.
-
 ## Best Practices
 
-### Do
-
-- Run `/doc:update` after each functional change (not pure refactors)
-- Run `/doc:challenge` at least once a week on an active project
+**Do:**
+- Run `doc-update` after each functional change (not pure refactors)
+- Run `doc-challenge` at least once a week on an active project
 - Commit doc and code together (same commit)
-- Use `/doc:interview` when a business colleague is available — best time to capture tacit knowledge
+- Use `doc-interview` when a business colleague is available
 
-### Don't
+**Don't:**
+- Try to document everything at once — iterate
+- Remove `[To confirm]` tags without resolving them
+- Document technical implementation in feature docs (that's code's job)
+- Create one feature file per micro-feature — group by business domain
 
-- Don't try to document everything at once — iterate
-- Don't remove `[To confirm]` tags without resolving them
-- Don't document technical implementation details in features (that's the job of code and comments)
-- Don't create one feature file per micro-feature — group by business domain
+## Plugin Structure
 
-## FAQ
+```
+functional-doc-sync/
+├── .claude-plugin/
+│   └── plugin.json          # Plugin manifest
+├── skills/
+│   ├── doc-init/SKILL.md
+│   ├── doc-update/SKILL.md
+│   ├── doc-interview/SKILL.md
+│   ├── doc-challenge/SKILL.md
+│   └── doc-coverage/SKILL.md
+├── templates/
+│   ├── OVERVIEW.md
+│   ├── ARCHITECTURE.md
+│   ├── FEATURE.md
+│   ├── DECISION.md
+│   └── CHANGELOG-FUNCTIONAL.md
+├── LICENSE                   # CC BY-SA 4.0
+└── README.md                 # This file
+```
 
-**Q: What if I make several changes before running `/doc:update`?**
-The update mode analyzes the full diff. Multiple changes will be processed together. But the larger the diff, the higher the risk of omissions. Prefer frequent updates.
+## License
 
-**Q: Does the skill work with any language?**
-Yes. Analysis is based on project structure, config files, and source code. The skill adapts to the detected stack.
-
-**Q: How to handle multi-repo projects?**
-Each repo has its own `docs/`. For cross-cutting documentation, create a dedicated `docs-system` repo with links to each repo's docs.
-
-**Q: Is the generated documentation perfect?**
-No. That's the central point: epistemic tags make explicit what is reliable and what is not. The documentation is a starting point that improves through iteration.
+CC BY-SA 4.0 — See [LICENSE](LICENSE) for details.
