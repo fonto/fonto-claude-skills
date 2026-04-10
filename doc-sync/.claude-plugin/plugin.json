@@ -3,11 +3,11 @@
   "description": "Maintain functional documentation in sync with code evolution. Retrodocument existing codebases, keep docs updated after changes, capture tacit knowledge, challenge accuracy, and measure coverage.",
   "version": "1.0.0",
   "author": {
-    "name": "Olivier"
+    "name": "Olivier Fontenelle"
   },
   "license": "CC-BY-SA-4.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/olivier/claude-skills"
+    "url": "https://github.com/fonto/claude-skills"
   }
 }
