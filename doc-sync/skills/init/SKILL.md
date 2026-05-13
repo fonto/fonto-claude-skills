@@ -88,7 +88,49 @@ Cross-reference:
 
 Output a coverage table and action items list.
 
-### Step 5: Prompt for Interview
+### Step 5: Generate Documentation Map
+
+Inject a compact index into the project's root `CLAUDE.md` or `AGENT.md` so coding assistants know where to find documentation without loading it all upfront.
+
+**Target file selection:**
+1. If `CLAUDE.md` exists at project root → inject there
+2. Else if `AGENT.md` exists → inject there
+3. Else → create `AGENT.md` with just the map section
+
+**Description per file type:**
+
+| File | Description to use |
+|------|--------------------|
+| `OVERVIEW.md` | "Project purpose, tech stack, entry points, functional blocks" |
+| `ARCHITECTURE.md` | "Component map, data flows, external dependencies, data models" |
+| `CHANGELOG-FUNCTIONAL.md` | "Functional evolution history" |
+| `features/<block>.md` | Extract first sentence of the "Purpose" section, or the H1 title |
+| `decisions/<n>-<name>.md` | Extract the H1 title, or humanize the filename if no H1 |
+
+**Map format** (use exactly these delimiters for idempotent updates):
+
+```markdown
+<!-- doc-sync:map:start -->
+## Documentation Index
+
+> Consult these files on demand — load only what's relevant to your task.
+
+| File | Description |
+|------|-------------|
+| [docs/OVERVIEW.md](docs/OVERVIEW.md) | Project purpose, tech stack, entry points, functional blocks |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Component map, data flows, external dependencies, data models |
+| [docs/features/auth.md](docs/features/auth.md) | <extracted description> |
+| [docs/decisions/001-db.md](docs/decisions/001-db.md) | <extracted description> |
+| [docs/CHANGELOG-FUNCTIONAL.md](docs/CHANGELOG-FUNCTIONAL.md) | Functional evolution history |
+<!-- doc-sync:map:end -->
+```
+
+**Injection rules:**
+- If the target file already contains the delimiters → replace only the block between them (idempotent)
+- If the target file exists without delimiters → append the map section at the end
+- If the target file does not exist → create it with only the map section
+
+### Step 6: Prompt for Interview
 
 - Count `[To confirm]` and `[Inference]` items
 - List the top priority items

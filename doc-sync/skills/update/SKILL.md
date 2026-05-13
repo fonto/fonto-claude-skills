@@ -64,6 +64,11 @@ description: "Use after any code change with functional impact to sync documenta
 - If new modules/routes/components appeared, add them to the coverage table
 - Update tag distribution if changed
 
+### Step 4.5: Refresh Documentation Map
+
+- If a `docs/features/*.md` or `docs/decisions/*.md` was **created or deleted** in this cycle → regenerate the full map section (same logic as `doc-sync:init` Step 5)
+- If only existing docs were modified (no new/deleted files) → skip, map is still accurate
+
 ### Step 5: Stage Together
 
 - Stage doc changes alongside code changes
