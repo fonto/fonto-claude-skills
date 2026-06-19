@@ -1,3 +1,12 @@
+---
+type: Feature
+title: {Feature/Block Name}
+description: {One-line summary of this functional block}
+tags: [{tag}]
+timestamp: {YYYY-MM-DDThh:mm:ssZ}
+confidence: {code | inference | to-confirm | declared | mixed}
+---
+
 # {Feature/Block Name}
 
 > Last updated: {date}
@@ -43,3 +52,10 @@
 ## Open Questions
 
 - [ ] {Anything marked [To confirm] that needs resolution}
+
+# Citations
+
+{Only include this section when claims in the body come from external sources.
+Use bundle-relative paths, references/ concepts, or absolute URLs.}
+
+1. {Source title} — {url or /references/{name}.md}

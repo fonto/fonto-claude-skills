@@ -1,10 +1,22 @@
 # doc-sync
 
-A Claude Code plugin that maintains functional documentation in sync with code evolution.
+A Claude Code plugin that maintains functional documentation in sync with code
+evolution, emitting an **OKF (Open Knowledge Format) knowledge bundle**.
 
 ## Why
 
 AI-assisted development generates code through ephemeral conversations. Without a dedicated mechanism, documentation drifts from code within days. This plugin forces synchronization by integrating doc maintenance into the development flow.
+
+## OKF conformance
+
+The generated docs are an [Open Knowledge Format v0.1](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
+*Knowledge Bundle*: a directory tree of markdown files where every non-reserved
+file carries YAML frontmatter with a non-empty `type`, plus reserved `index.md`
+(progressive-disclosure listings) and `log.md` (dated history) files. This makes the
+docs portable, diffable, and readable by both humans and agents without tooling.
+
+doc-sync keeps its signature **epistemic tags** inline in the body (legal OKF prose)
+and additionally surfaces a document-level `confidence` key in the frontmatter.
 
 ## Installation
 
@@ -28,17 +40,22 @@ claude --plugin-dir /path/to/doc-sync
 
 Copy the `doc-sync/` folder to `~/.claude/skills/` (personal) or `.claude/skills/` in your project (project-scoped).
 
-## The 5 Skills
+## The 6 Skills
 
 All skills are namespaced under `doc-sync`:
 
 | Command | When to use | Duration |
 |---------|------------|----------|
-| `/doc-sync:init` | First run on an existing project | 5-20 min |
+| `/doc-sync:init [path]` | First run on an existing project (bundle defaults to `docs/okf/`) | 5-20 min |
 | `/doc-sync:update` | After each functional change | 1-3 min |
 | `/doc-sync:interview` | To capture tacit knowledge | 5-30 min (interactive) |
 | `/doc-sync:challenge` | Periodic review or post-refactoring | 3-10 min |
 | `/doc-sync:coverage` | Measure completeness | 1-2 min |
+| `/doc-sync:map` | Refresh bundle indexes + CLAUDE.md pointer | < 1 min |
+
+The bundle location defaults to `docs/okf/` and is overridable by passing a path to
+`/doc-sync:init`. Other skills auto-discover the bundle via the `okf_version` marker
+in its root `index.md`.
 
 ## Quick Start
 
@@ -58,7 +75,7 @@ claude → [asks questions one at a time about unclear areas]
 you    → "Add a password reset endpoint"
 claude → [codes the endpoint]
 you    → /doc-sync:update
-claude → [updates docs/features/auth.md + CHANGELOG-FUNCTIONAL.md]
+claude → [updates docs/okf/features/auth.md + appends to docs/okf/log.md]
 you    → "commit"
 claude → [commits code + doc together]
 ```
@@ -100,21 +117,40 @@ The AI reads code and deduces intentions. Sometimes it's right, sometimes not. T
 
 Goal: maximize `[Code]` and `[Declared]`, minimize `[To confirm]`.
 
-## Generated Documentation Structure
+The inline tags are summarized at the document level by the frontmatter `confidence`
+key (`code` | `inference` | `to-confirm` | `declared` | `mixed`).
+
+## Generated Documentation Structure (OKF bundle)
+
+Default location `docs/okf/` (override with `/doc-sync:init <path>`):
 
 ```
-docs/
-├── OVERVIEW.md              # Vision, stack, macro architecture
-├── ARCHITECTURE.md          # Components, dependencies, data flows
-├── CHANGELOG-FUNCTIONAL.md  # Functional evolution journal
-├── COVERAGE.md              # Coverage map (auto-generated)
-├── features/                # One file per functional block
-│   ├── auth.md
-│   └── ...
-└── decisions/               # Architecture Decision Records
-    ├── 001-choice-of-db.md
-    └── ...
+docs/okf/                    # the OKF Knowledge Bundle
+├── index.md                 # RESERVED — bundle entry, frontmatter = okf_version only
+├── log.md                   # RESERVED — functional history (dated, newest first)
+├── OVERVIEW.md              # type: Overview      — vision, stack, macro architecture
+├── ARCHITECTURE.md          # type: Architecture  — components, dependencies, data flows
+├── COVERAGE.md              # type: Coverage Report (auto-generated)
+├── features/                # type: Feature — one concept per functional block
+│   ├── index.md             # RESERVED — listing (no frontmatter)
+│   └── auth.md
+├── decisions/               # type: Decision — Architecture Decision Records
+│   ├── index.md
+│   └── 001-choice-of-db.md
+└── data/                    # type: "<DB> Table" — data catalog, one concept per table
+    ├── index.md
+    └── users.md
 ```
+
+Every concept carries frontmatter (`type` required). FKs and cross-references are
+markdown links between concepts; external sources go under a `# Citations` heading.
+
+### Migrating from v1.x
+
+v1 wrote a tag-only `docs/` tree with no frontmatter and a `CHANGELOG-FUNCTIONAL.md`.
+To upgrade: move the tree to `docs/okf/` (or re-run `/doc-sync:init`), then run
+`/doc-sync:challenge` — it adds missing `type` frontmatter, and `/doc-sync:update`
+switches the changelog to `log.md`.
 
 ## Best Practices
 
@@ -141,13 +177,16 @@ doc-sync/
 │   ├── update/SKILL.md
 │   ├── interview/SKILL.md
 │   ├── challenge/SKILL.md
-│   └── coverage/SKILL.md
+│   ├── coverage/SKILL.md
+│   └── map/SKILL.md
 ├── templates/
 │   ├── OVERVIEW.md
 │   ├── ARCHITECTURE.md
 │   ├── FEATURE.md
 │   ├── DECISION.md
-│   └── CHANGELOG-FUNCTIONAL.md
+│   ├── TABLE.md
+│   ├── index.md
+│   └── log.md
 ├── LICENSE
 └── README.md
 ```

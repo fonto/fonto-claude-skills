@@ -1,3 +1,11 @@
+---
+type: Architecture
+title: Architecture — {Project Name}
+description: Component map, data flows, external dependencies, configuration
+timestamp: {YYYY-MM-DDThh:mm:ssZ}
+confidence: mixed
+---
+
 # Architecture — {Project Name}
 
 > [Code] / [Inference] Auto-generated. Last updated: {date}
@@ -30,11 +38,9 @@
 
 ## Data Models
 
-[Code] {Key data structures, schemas, models.}
+[Code] {High-level summary only — each table/model is documented as its own OKF concept.}
 
-### {Model Name}
-
-- {field}: {type} — {purpose}
+See [data/index.md](data/index.md) for the full data catalog (one concept per table).
 
 ## Configuration
 

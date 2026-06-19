@@ -1,11 +1,17 @@
 ---
 name: coverage
-description: "Use to measure documentation completeness. Inventories code surface vs documented surface, computes coverage percentage and epistemic tag distribution, generates COVERAGE.md. Trigger with /doc-sync:coverage"
+description: "Use to measure documentation completeness. Inventories code surface vs documented OKF concepts, computes coverage percentage, epistemic tag distribution, and OKF conformance, generates COVERAGE.md. Trigger with /doc-sync:coverage"
 ---
 
 # coverage — Measure Documentation Completeness
 
-**Announce:** "I'm using the doc-sync plugin to measure documentation coverage."
+**Announce:** "I'm using the doc-sync plugin to measure OKF bundle coverage."
+
+## Locate the Bundle
+
+- If a path argument is given, use it.
+- Otherwise find the bundle root: the `index.md` whose frontmatter contains
+  `okf_version:`. Fallback: `docs/okf/`, then `docs/`. `<bundle>/` refers to it below.
 
 ## Epistemic Tags
 
@@ -24,7 +30,7 @@ description: "Use to measure documentation completeness. Inventories code surfac
 Scan the project and list all:
 - Modules / packages / top-level directories
 - Routes / endpoints (REST, GraphQL, CLI commands)
-- Models / schemas / data structures
+- Tables / collections / models (the data layer — migrations, ORM)
 - Services / key business logic files
 - External integrations
 
@@ -32,23 +38,37 @@ Group by functional domain (not by file type).
 
 ### Step 2: Inventory Documented Surface
 
-Parse `docs/features/*.md` and extract:
+Inventory concepts by reading the `type` field in each concept's frontmatter.
+
+Parse `<bundle>/features/*.md` (`type: Feature`) and extract:
 - Which functional blocks are documented
 - How many substantive assertions each contains
-- Epistemic tag distribution per file
+- Epistemic tag distribution per concept (cross-check against `confidence`)
 
-Parse `docs/ARCHITECTURE.md` and extract:
-- Which components are listed
-- Which data flows are described
-- Which external dependencies are documented
+Parse `<bundle>/data/*.md` (`type: "<DB> Table"`) and extract:
+- Which tables/collections are documented vs present in code
 
-Parse `docs/decisions/*.md` and count ADRs.
+Parse `<bundle>/ARCHITECTURE.md` and extract:
+- Which components, data flows, and external dependencies are documented
+
+Parse `<bundle>/decisions/*.md` (`type: Decision`) and count ADRs.
+
+Also compute **OKF conformance**: % of non-reserved `.md` files with a parseable
+frontmatter carrying a non-empty `type`.
 
 ### Step 3: Generate COVERAGE.md
 
-Write or overwrite `docs/COVERAGE.md`:
+Write or overwrite `<bundle>/COVERAGE.md` (it is itself a concept — keep its
+frontmatter `type: Coverage Report`):
 
 ```markdown
+---
+type: Coverage Report
+title: Documentation Coverage
+timestamp: YYYY-MM-DDThh:mm:ssZ
+confidence: code
+---
+
 # Documentation Coverage
 
 Last updated: YYYY-MM-DD
@@ -56,6 +76,9 @@ Last updated: YYYY-MM-DD
 ## Summary
 - Functional blocks in code: N
 - Functional blocks documented: N (Z%)
+- Tables in code: N
+- Tables documented: N (Z%)
+- OKF conformance: N% of concepts have valid `type` frontmatter
 - Total assertions: N
   - [Code]: N (X%)
   - [Inference]: N (X%)
@@ -66,12 +89,19 @@ Last updated: YYYY-MM-DD
 
 ## Coverage by Functional Block
 
-| Block | Documented | Doc File | Status | Tag Distribution |
-|-------|-----------|----------|--------|-----------------|
+| Block | Documented | Concept | Status | Tag Distribution |
+|-------|-----------|---------|--------|-----------------|
 | auth | ✅ Yes | features/auth.md | Current | 70% [Code], 20% [Inference], 10% [Declared] |
 | payments | ⚠️ Partial | features/payments.md | Outdated | 30% [Code], 20% [Inference], 50% [To confirm] |
 | reports | ❌ No | — | Missing | — |
 | webhooks | ❌ No | — | Missing | — |
+
+## Data Catalog Coverage
+
+| Table | Documented | Concept |
+|-------|-----------|---------|
+| users | ✅ Yes | data/users.md |
+| orders | ❌ No | — |
 
 ## Confidence Score
 

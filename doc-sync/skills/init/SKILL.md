@@ -1,11 +1,45 @@
 ---
 name: init
-description: "Use when retrodocumenting an existing codebase for the first time. Analyzes the full project structure, generates a complete docs/ directory with OVERVIEW, ARCHITECTURE, per-feature docs, and a coverage map. Trigger with /doc-sync:init"
+description: "Use when retrodocumenting an existing codebase for the first time. Analyzes the full project structure and generates a complete OKF (Open Knowledge Format) bundle with OVERVIEW, ARCHITECTURE, per-feature concepts, a per-table data catalog, and index/log files. Trigger with /doc-sync:init [path]"
 ---
 
-# init — Retrodocument an Existing Codebase
+# init — Retrodocument an Existing Codebase as an OKF Bundle
 
-**Announce:** "I'm using the doc-sync plugin to retrodocument this project."
+**Announce:** "I'm using the doc-sync plugin to retrodocument this project as an OKF bundle."
+
+The output is a **Knowledge Bundle** conforming to Open Knowledge Format v0.1
+(https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md):
+a directory tree of markdown files where every non-reserved file carries YAML
+frontmatter with a non-empty `type`, and reserved files (`index.md`, `log.md`)
+follow a fixed structure.
+
+## Bundle Location
+
+- **Default:** `docs/okf/`.
+- **Override:** the first argument to the skill, e.g. `/doc-sync:init docs/knowledge`
+  or `/doc-sync:init .` — if absent, use `docs/okf/`.
+- Throughout this skill, `<bundle>/` means that root.
+
+## Frontmatter (every concept)
+
+Only `type` is required by OKF. doc-sync also writes these producer keys:
+
+```yaml
+---
+type: <Type>                  # REQUIRED — Overview | Architecture | Feature | Decision | "<DB> Table" | Coverage Report | Reference
+title: <display name>
+description: <one-line summary>
+tags: [<tag>, ...]
+timestamp: <ISO 8601 datetime>
+confidence: <code | inference | to-confirm | declared | mixed>
+---
+```
+
+`confidence` is the document-level summary of the inline epistemic tags below
+(use the lowest/dominant level present; `mixed` when several coexist).
+
+Reserved files have NO frontmatter, except the **bundle-root** `index.md`, which
+carries ONLY `okf_version: "0.1"`.
 
 ## Epistemic Tags
 
@@ -24,16 +58,26 @@ Every substantive statement MUST be prefixed with one of:
 ## Target Structure
 
 ```
-docs/
-├── OVERVIEW.md
-├── ARCHITECTURE.md
-├── CHANGELOG-FUNCTIONAL.md
-├── COVERAGE.md
+<bundle>/                    # default docs/okf/
+├── index.md                 # RESERVED — bundle root: frontmatter = ONLY okf_version: "0.1"
+├── log.md                   # RESERVED — functional history, date-grouped, newest first
+├── OVERVIEW.md              # concept · type: Overview
+├── ARCHITECTURE.md          # concept · type: Architecture
+├── COVERAGE.md              # concept · type: Coverage Report
 ├── features/
-│   └── <one file per functional block>.md
-└── decisions/
-    └── <ADRs if detectable>.md
+│   ├── index.md            # RESERVED — no frontmatter
+│   └── <block>.md          # concept · type: Feature
+├── decisions/
+│   ├── index.md            # RESERVED — no frontmatter
+│   └── <NNN>-<title>.md    # concept · type: Decision (if detectable)
+└── data/
+    ├── index.md            # RESERVED — no frontmatter
+    └── <table>.md          # concept · type: "<DB> Table" (one per table/model)
 ```
+
+Links between concepts are markdown links. Prefer relative paths within a
+directory; use bundle-relative paths (leading `/`) for cross-directory links
+(e.g. a FK in `data/orders.md` → `[users](/data/users.md)`).
 
 ## Process
 
@@ -51,77 +95,113 @@ docs/
 - Map dependencies between components
 - Identify external integrations (APIs, databases, queues, third-party services)
 - Group into functional blocks (by business domain, not by file type)
+- **Locate the data layer** — this becomes the `data/` catalog. Look for:
+  - SQL migrations / DDL (`migrations/`, `*.sql`, schema dumps)
+  - ORM models (Prisma `schema.prisma`, SQLAlchemy, Django models, TypeORM,
+    Sequelize, ActiveRecord, Ent, GORM, etc.)
+  - Detect the datastore flavor (Postgres, MySQL, SQLite, BigQuery, Mongo…) to
+    pick the concept `type` and the `resource:` URI scheme.
+  - For each table/collection: columns, types, nullability, primary key, and
+    foreign keys (FKs become links to other table concepts).
 
-### Step 3: Generate Documentation
+### Step 3: Generate the Bundle
 
-For each file, use the templates in the `templates/` directory of this plugin as starting points. Adapt to the specific project.
+For each file, use the templates in the `templates/` directory of this plugin as
+starting points. Adapt to the specific project. **Every concept gets frontmatter
+(`type` required); reserved files do not** (except root `index.md` → `okf_version`).
 
-**OVERVIEW.md:**
+**OVERVIEW.md** (`type: Overview`):
 - Project purpose (from README, package description, or `[To confirm]`)
 - Stack (from config files — tag `[Code]`)
 - Architecture summary (tag `[Inference]`)
-- Table of functional blocks with links to feature docs
+- Table of functional blocks with links to feature concepts
 
-**ARCHITECTURE.md:**
+**ARCHITECTURE.md** (`type: Architecture`):
 - Component table with responsibilities and file locations (`[Code]`)
 - Data flow descriptions (`[Inference]`)
 - External dependencies (`[Code]`)
-- Data models / schemas (`[Code]`)
+- Data models: high-level summary only + link to `data/index.md` (details live
+  in per-table concepts, not here)
 - Configuration / env vars (`[Code]`)
 
-**features/<block>.md** (one per functional block):
+**features/<block>.md** (`type: Feature`, one per functional block):
 - Purpose (`[Inference]` or `[To confirm]`)
 - Behavior — describe what the feature does, triggers, outcomes, error cases
 - Business rules (`[To confirm]` unless obvious from code)
 - Edge cases (`[Inference]`)
 - Dependencies on other blocks
+- `# Citations` only if claims come from external sources
 
-**CHANGELOG-FUNCTIONAL.md:**
-- Initialize with a single entry: "Initial documentation generated from codebase analysis"
+**data/<table>.md** (`type: "<DB> Table"`, one per table/collection from Step 2):
+- `resource:` canonical URI (e.g. `postgres://<db>/public/users`)
+- `# Schema` table: column, type, null, key, description (tag `[Code]`)
+- FKs as links to other table concepts (e.g. `FK → [users](/data/users.md)`)
+- `# Examples` with a typical query (`[Inference]`)
+- Use `templates/TABLE.md`
+
+**log.md** (RESERVED, no frontmatter):
+- Initialize with one dated entry, e.g.
+  `## <YYYY-MM-DD>` / `* **Creation**: Initial documentation generated from codebase analysis.`
+
+**index.md files** (RESERVED):
+- Bundle root `<bundle>/index.md`: frontmatter `okf_version: "0.1"` only, then
+  sections (Overview / Features / Data / Decisions / History) listing concepts as
+  bullets `[link](path.md) — one-line description` (progressive disclosure).
+- `features/index.md`, `decisions/index.md`, `data/index.md`: no frontmatter, one
+  bullet per concept in that directory. Use `templates/index.md`.
 
 ### Step 4: Generate COVERAGE.md
 
+`COVERAGE.md` is a concept too — give it frontmatter `type: Coverage Report`.
 Cross-reference:
 - Code modules/routes/components identified in Step 2
-- Feature docs generated in Step 3
-- Tag distribution per feature
+- Feature concepts and data-catalog (table) concepts generated in Step 3
+- Tag distribution per concept
 
 Output a coverage table and action items list.
 
 ### Step 5: Generate Documentation Map
 
-Inject a compact index into the project's root `CLAUDE.md` or `AGENT.md` so coding assistants know where to find documentation without loading it all upfront.
+Inject a compact index into the project's root `CLAUDE.md` or `AGENT.md` so coding
+assistants know the bundle exists and where to enter it. This is separate from the
+OKF `index.md` files (which live inside the bundle); the CLAUDE.md map points at
+the bundle root and names its path so other doc-sync skills can discover it.
 
 **Target file selection:**
 1. If `CLAUDE.md` exists at project root → inject there
 2. Else if `AGENT.md` exists → inject there
 3. Else → create `AGENT.md` with just the map section
 
-**Description per file type:**
+**Description per file type** (paths are relative to project root, using `<bundle>/`):
 
 | File | Description to use |
 |------|--------------------|
+| `index.md` | "OKF bundle entry — start here (progressive disclosure)" |
 | `OVERVIEW.md` | "Project purpose, tech stack, entry points, functional blocks" |
-| `ARCHITECTURE.md` | "Component map, data flows, external dependencies, data models" |
-| `CHANGELOG-FUNCTIONAL.md` | "Functional evolution history" |
+| `ARCHITECTURE.md` | "Component map, data flows, external dependencies" |
+| `data/index.md` | "Data catalog — one concept per table" |
+| `log.md` | "Functional change history" |
 | `features/<block>.md` | Extract first sentence of the "Purpose" section, or the H1 title |
 | `decisions/<n>-<name>.md` | Extract the H1 title, or humanize the filename if no H1 |
 
-**Map format** (use exactly these delimiters for idempotent updates):
+**Map format** (use exactly these delimiters for idempotent updates; `<bundle>` is
+the actual path, e.g. `docs/okf`):
 
 ```markdown
 <!-- doc-sync:map:start -->
 ## Documentation Index
 
-> Consult these files on demand — load only what's relevant to your task.
+> OKF knowledge bundle at `<bundle>/`. Consult on demand — load only what's relevant.
 
 | File | Description |
 |------|-------------|
-| [docs/OVERVIEW.md](docs/OVERVIEW.md) | Project purpose, tech stack, entry points, functional blocks |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Component map, data flows, external dependencies, data models |
-| [docs/features/auth.md](docs/features/auth.md) | <extracted description> |
-| [docs/decisions/001-db.md](docs/decisions/001-db.md) | <extracted description> |
-| [docs/CHANGELOG-FUNCTIONAL.md](docs/CHANGELOG-FUNCTIONAL.md) | Functional evolution history |
+| [<bundle>/index.md](<bundle>/index.md) | OKF bundle entry — start here (progressive disclosure) |
+| [<bundle>/OVERVIEW.md](<bundle>/OVERVIEW.md) | Project purpose, tech stack, entry points, functional blocks |
+| [<bundle>/ARCHITECTURE.md](<bundle>/ARCHITECTURE.md) | Component map, data flows, external dependencies |
+| [<bundle>/data/index.md](<bundle>/data/index.md) | Data catalog — one concept per table |
+| [<bundle>/features/auth.md](<bundle>/features/auth.md) | <extracted description> |
+| [<bundle>/decisions/001-db.md](<bundle>/decisions/001-db.md) | <extracted description> |
+| [<bundle>/log.md](<bundle>/log.md) | Functional change history |
 <!-- doc-sync:map:end -->
 ```
 
@@ -138,13 +218,17 @@ Inject a compact index into the project's root `CLAUDE.md` or `AGENT.md` so codi
 
 ## Output
 
-- Complete `docs/` directory
-- All files committed to git with message: `docs: initial retrodocumentation via doc-sync:init`
+- Complete `<bundle>/` OKF bundle (default `docs/okf/`)
+- All files committed to git with message: `docs: initial OKF retrodocumentation via doc-sync:init`
 
 ## Key Rules
 
 - Group features by **business domain**, not by technical layer
 - Don't document implementation details — document **behavior and intent**
 - Prefer short, dense descriptions over verbose prose
-- Every section must have at least one epistemic tag
+- Every concept carries frontmatter with a non-empty `type`; reserved files
+  (`index.md`, `log.md`) carry none (root `index.md` → `okf_version` only)
+- Every section must have at least one epistemic tag; `confidence` in frontmatter
+  summarizes them
+- One table/collection = one concept in `data/`; FKs become links
 - If tests exist, extract functional assertions from them and tag as `[Code]`

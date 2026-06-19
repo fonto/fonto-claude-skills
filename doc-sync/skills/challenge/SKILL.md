@@ -1,11 +1,17 @@
 ---
 name: challenge
-description: "Use for periodic review or after major refactoring. Cross-references documentation against current code, identifies inconsistencies, dead docs, undocumented features, and suspect inferences. Trigger with /doc-sync:challenge"
+description: "Use for periodic review or after major refactoring. Cross-references documentation against current code, identifies inconsistencies, dead docs, undocumented features, suspect inferences, and OKF conformance issues. Trigger with /doc-sync:challenge"
 ---
 
 # challenge — Verify Documentation Accuracy
 
-**Announce:** "I'm using the doc-sync plugin to challenge the documentation against the current code."
+**Announce:** "I'm using the doc-sync plugin to challenge the OKF bundle against the current code."
+
+## Locate the Bundle
+
+- If a path argument is given, use it.
+- Otherwise find the bundle root: the `index.md` whose frontmatter contains
+  `okf_version:`. Fallback: `docs/okf/`, then `docs/`. `<bundle>/` refers to it below.
 
 ## Epistemic Tags
 
@@ -21,16 +27,21 @@ description: "Use for periodic review or after major refactoring. Cross-referenc
 
 ### Step 1: Cross-Reference Doc vs Code
 
-For each `docs/features/*.md`:
+For each `<bundle>/features/*.md`:
 - Verify assertions tagged `[Code]` against current source — do they still hold?
 - Check documented flows against actual code paths
 - Identify **dead doc:** features documented but no longer present in code
-- Identify **undocumented code:** code paths not covered by any feature doc
+- Identify **undocumented code:** code paths not covered by any feature concept
 
-For `docs/ARCHITECTURE.md`:
+For `<bundle>/ARCHITECTURE.md`:
 - Verify component list matches actual project structure
 - Check dependency map against current imports/configs
 - Verify external integrations still exist
+
+For each `<bundle>/data/*.md` (table concepts):
+- Verify the `# Schema` matches the real schema (migrations / ORM models)
+- Flag columns/tables removed from code, and tables present in code but undocumented
+- Check FK links resolve to existing table concepts
 
 ### Step 2: Check Inference Validity
 
@@ -39,6 +50,14 @@ For `docs/ARCHITECTURE.md`:
   - Contradict current code behavior
   - Describe removed functionality
   - Make assumptions no longer supported by code structure
+
+### Step 2.5: Check OKF Conformance
+
+- Every non-reserved `.md` has a parseable YAML frontmatter with a non-empty `type`
+- Reserved files: bundle-root `index.md` has `okf_version`; other `index.md` and all
+  `log.md` carry no frontmatter; `log.md` is date-grouped, newest first
+- Cross-links (markdown links between concepts) resolve to existing files
+- Flag any violation (these are conformance issues, not behavior issues)
 
 ### Step 3: Produce Challenge Report
 
@@ -54,6 +73,7 @@ Output a structured report:
 - Dead documentation: N
 - Undocumented code: N
 - Suspect inferences: N
+- OKF conformance issues: N
 
 ## Inconsistencies
 | File | Section | Issue | Suggested Fix |
@@ -74,14 +94,23 @@ Output a structured report:
 | File | Assertion | Concern |
 |------|-----------|---------|
 | features/billing.md | "[Inference] Invoices are generated monthly" | No scheduling logic found in code |
+
+## OKF Conformance
+| File | Issue | Suggested Fix |
+|------|-------|--------------|
+| features/legacy.md | Missing `type` in frontmatter | Add `type: Feature` |
+| data/orders.md | FK link to `/data/users.md` is broken | Create concept or fix link |
 ```
 
 ### Step 4: Apply Fixes
 
-- **Auto-fix clear inconsistencies:** renamed files, moved modules, updated values — apply directly, tag `[Code]`
+- **Auto-fix clear inconsistencies:** renamed files, moved modules, updated values,
+  missing/invalid `type` frontmatter — apply directly, tag `[Code]`
 - **Flag ambiguous issues:** change tag to `[To confirm]`, add comment with challenge date
-- **Remove dead doc:** move to a `docs/_archive/` directory (don't delete — preserve history)
-- **Create stubs for undocumented code:** generate minimal feature doc tagged `[Inference]`
+- **Remove dead doc:** move to a `<bundle>/_archive/` directory (don't delete — preserve
+  history). Archived concepts keep valid frontmatter so the bundle stays conformant.
+- **Create stubs for undocumented code:** generate minimal feature concept (with
+  frontmatter) tagged `[Inference]`; add a table concept for any undocumented table
 
 ### Step 5: Suggest Next Steps
 

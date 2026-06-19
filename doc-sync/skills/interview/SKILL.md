@@ -7,6 +7,12 @@ description: "Use to capture tacit knowledge from developers or business stakeho
 
 **Announce:** "I'm using the doc-sync plugin to interview you about documentation gaps."
 
+## Locate the Bundle
+
+- If a path argument is given, use it.
+- Otherwise find the bundle root: the `index.md` whose frontmatter contains
+  `okf_version:`. Fallback: `docs/okf/`, then `docs/`. `<bundle>/` refers to it below.
+
 ## Epistemic Tags
 
 | Tag | Meaning |
@@ -21,7 +27,7 @@ description: "Use to capture tacit knowledge from developers or business stakeho
 
 ### Step 1: Collect Open Questions
 
-- Scan all `docs/` files for `[To confirm]` and `[Inference]` tags
+- Scan all `<bundle>/` files for `[To confirm]` and `[Inference]` tags
 - Group by feature/topic
 - Prioritize:
   1. Business rules tagged `[To confirm]` — highest risk of being wrong
@@ -44,7 +50,7 @@ For each item:
 
 **Example:**
 ```
-In docs/features/auth.md, section "Password Reset":
+In <bundle>/features/auth.md, section "Password Reset":
 
 > [Inference] The reset token expires after 24 hours.
 
@@ -57,17 +63,34 @@ For each answer:
 - **Confirmed as-is:** Replace tag with `[Declared]`
 - **Corrected:** Update content + tag as `[Declared]`
 - **Still unclear:** Keep `[To confirm]`, add a note: `<!-- Discussed YYYY-MM-DD, still unresolved -->`
-- **Reveals a decision:** Create an ADR in `docs/decisions/NNN-<topic>.md`
+- **Reveals a decision:** Create a Decision concept in `<bundle>/decisions/NNN-<topic>.md`
+- **Cites a source:** add it under a `# Citations` section in the concept
 
-**ADR template:**
+After editing a concept, **refresh its frontmatter**: bump `timestamp`, and raise
+`confidence` (e.g. to `declared`) to reflect the upgraded tags. Add/refresh the
+matching `decisions/index.md` entry when a new Decision is created.
+
+**Decision concept template** (note the frontmatter — it is a real OKF concept):
 ```markdown
+---
+type: Decision
+title: NNN — <Title>
+timestamp: YYYY-MM-DDThh:mm:ssZ
+status: Accepted
+source: "[Declared] — <who provided this>"
+confidence: declared
+---
+
 # NNN — <Title>
-**Date:** YYYY-MM-DD
-**Status:** Accepted
-**Context:** <why was a decision needed>
-**Decision:** <what was decided>
-**Consequences:** <trade-offs, implications>
-**Source:** [Declared] — <who provided this>
+
+## Context
+<why was a decision needed>
+
+## Decision
+<what was decided>
+
+## Consequences
+<trade-offs, implications>
 ```
 
 ### Step 5: Report Progress
