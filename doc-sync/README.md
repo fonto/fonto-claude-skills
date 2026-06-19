@@ -187,8 +187,28 @@ doc-sync/
 │   ├── TABLE.md
 │   ├── index.md
 │   └── log.md
+├── scripts/
+│   ├── make_fixture.sh   # scaffold a throwaway test repo
+│   └── validate_okf.py   # check a generated bundle for OKF conformance
 ├── LICENSE
 └── README.md
+```
+
+## Development & testing
+
+The skills are prompts, so the real test is running them and inspecting the output.
+
+```bash
+# 1. scaffold a throwaway repo (migrations + 2 features)
+doc-sync/scripts/make_fixture.sh /tmp/okf-test
+
+# 2. run the skills against it in a fresh session (loads the local plugin)
+cd /tmp/okf-test && claude --plugin-dir /path/to/doc-sync
+#    then: /doc-sync:init  →  /doc-sync:update  →  /doc-sync:challenge  →  /doc-sync:coverage
+
+# 3. mechanically validate the generated bundle (no LLM)
+python3 /path/to/doc-sync/scripts/validate_okf.py /tmp/okf-test/docs/okf
+#    errors → non-conformant; warnings → broken links / non-ISO log dates
 ```
 
 ## License
