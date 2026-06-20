@@ -50,7 +50,9 @@ description: "Use after any code change with functional impact to sync documenta
   recompute `confidence` from the inline tags now present
 
 **If the schema/data layer changed** (migration added, model field changed):
-- Update the affected `<bundle>/data/<table>.md` concept's `# Schema` and FK links
+- Update the affected `<bundle>/data/<table>.md` concept's `# Schema` (columns,
+  nullability, constraints — read the DDL/model literally, `NOT NULL`/`UNIQUE`
+  exactly as written) and FK links
 - Add a new table concept if a new table/collection appeared (use `templates/TABLE.md`)
 - Refresh that concept's `timestamp`/`confidence`
 

@@ -88,6 +88,10 @@ directory; use bundle-relative paths (leading `/`) for cross-directory links
 - Identify stack, frameworks, key dependencies
 - Locate test files — they are a source of functional truth
 - Locate existing documentation (README, comments, inline docs)
+- **Read manifest/config files before describing the stack** (package.json,
+  pyproject.toml/requirements.txt, go.mod, Cargo.toml, Gemfile, composer.json,
+  etc.). Never state that a file, dependency, or config is *absent* without having
+  listed the directory and confirmed it — tag `[Code]` only for what you read.
 
 ### Step 2: Build Component Map
 
@@ -101,8 +105,14 @@ directory; use bundle-relative paths (leading `/`) for cross-directory links
     Sequelize, ActiveRecord, Ent, GORM, etc.)
   - Detect the datastore flavor (Postgres, MySQL, SQLite, BigQuery, Mongo…) to
     pick the concept `type` and the `resource:` URI scheme.
-  - For each table/collection: columns, types, nullability, primary key, and
-    foreign keys (FKs become links to other table concepts).
+  - For each table/collection, **read the DDL/model literally** and capture:
+    - columns and types
+    - **nullability** — `no` (not null) if the source declares `NOT NULL` or the
+      column is a primary key; `yes` only when there is no NOT NULL and it is not a
+      PK. Do not guess: if the source is ambiguous, tag that row `[To confirm]`
+      rather than asserting `[Code]`.
+    - **constraints** — primary key, foreign keys, `UNIQUE`, `DEFAULT`, `CHECK`
+    - FKs become links to other table concepts.
 
 ### Step 3: Generate the Bundle
 
@@ -134,7 +144,9 @@ starting points. Adapt to the specific project. **Every concept gets frontmatter
 
 **data/<table>.md** (`type: "<DB> Table"`, one per table/collection from Step 2):
 - `resource:` canonical URI (e.g. `postgres://<db>/public/users`)
-- `# Schema` table: column, type, null, key, description (tag `[Code]`)
+- `# Schema` table: column, type, null, key, **constraints**, description — fill
+  nullability and constraints exactly as read in Step 2 (`[Code]`; ambiguous rows
+  → `[To confirm]`)
 - FKs as links to other table concepts (e.g. `FK → [users](/data/users.md)`)
 - `# Examples` with a typical query (`[Inference]`)
 - Use `templates/TABLE.md`
@@ -231,4 +243,7 @@ the actual path, e.g. `docs/okf`):
 - Every section must have at least one epistemic tag; `confidence` in frontmatter
   summarizes them
 - One table/collection = one concept in `data/`; FKs become links
+- **Accuracy over completeness:** tag `[Code]` ONLY for facts read directly from
+  source (a `NOT NULL`, a `UNIQUE`, a present file). If you did not verify it, use
+  `[Inference]` or `[To confirm]` — never assert an unverified detail as `[Code]`
 - If tests exist, extract functional assertions from them and tag as `[Code]`

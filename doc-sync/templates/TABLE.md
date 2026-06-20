@@ -16,11 +16,21 @@ confidence: code
 
 [Code]
 
-| Column | Type | Null | Key | Description |
-|--------|------|------|-----|-------------|
-| {id} | {uuid} | {no} | PK | {purpose} |
-| {fk_id} | {uuid} | {no} | FK → [{other_table}](/data/{other_table}.md) | {purpose} |
-| {field} | {type} | {yes/no} | — | {purpose} |
+<!--
+Read the DDL / ORM model LITERALLY — do not guess:
+- Null: "no" if the source declares NOT NULL or the column is a primary key;
+  "yes" ONLY when there is no NOT NULL and it is not a PK. If the source is
+  ambiguous, tag that row [To confirm] instead of asserting [Code].
+- Key: PK | FK → [other](/data/other.md) | — (combine with a comma if both).
+- Constraints: UNIQUE, DEFAULT <x>, CHECK(<…>), generated, etc. "—" if none.
+-->
+
+| Column | Type | Null | Key | Constraints | Description |
+|--------|------|------|-----|-------------|-------------|
+| {id} | {uuid} | no | PK | — | {purpose} |
+| {fk_id} | {uuid} | no | FK → [{other_table}](/data/{other_table}.md) | — | {purpose} |
+| {email} | {text} | no | — | UNIQUE | {purpose} |
+| {field} | {type} | {yes/no} | — | {DEFAULT/CHECK/—} | {purpose} |
 
 ## Relationships
 
