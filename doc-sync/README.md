@@ -40,13 +40,14 @@ claude --plugin-dir /path/to/doc-sync
 
 Copy the `doc-sync/` folder to `~/.claude/skills/` (personal) or `.claude/skills/` in your project (project-scoped).
 
-## The 6 Skills
+## The 7 Skills
 
 All skills are namespaced under `doc-sync`:
 
 | Command | When to use | Duration |
 |---------|------------|----------|
 | `/doc-sync:init [path]` | First run on an existing project (bundle defaults to `docs/okf/`) | 5-20 min |
+| `/doc-sync:migrate [src] [dst]` | One-time upgrade of a v1 `docs/` tree to a v2 OKF bundle | 3-10 min |
 | `/doc-sync:update` | After each functional change | 1-3 min |
 | `/doc-sync:interview` | To capture tacit knowledge | 5-30 min (interactive) |
 | `/doc-sync:challenge` | Periodic review or post-refactoring | 3-10 min |
@@ -148,9 +149,17 @@ markdown links between concepts; external sources go under a `# Citations` headi
 ### Migrating from v1.x
 
 v1 wrote a tag-only `docs/` tree with no frontmatter and a `CHANGELOG-FUNCTIONAL.md`.
-To upgrade: move the tree to `docs/okf/` (or re-run `/doc-sync:init`), then run
-`/doc-sync:challenge` — it adds missing `type` frontmatter, and `/doc-sync:update`
-switches the changelog to `log.md`.
+Run **`/doc-sync:migrate`** once — it transforms the tree in place (it does *not*
+regenerate from code, so human `[Declared]` content is preserved): moves `docs/` →
+`docs/okf/`, adds `type`/`confidence` frontmatter, converts the changelog to
+`log.md`, lifts decisions, extracts the new `data/` catalog, and generates the
+`index.md` files. It finishes by running the OKF validator.
+
+```
+you    → /doc-sync:migrate
+claude → [moves tree, adds frontmatter, builds data/ + index.md, validates]
+claude → "Migrated 9 concepts, extracted 3 tables, 0 OKF errors."
+```
 
 ## Best Practices
 
@@ -174,6 +183,7 @@ doc-sync/
 │   └── plugin.json
 ├── skills/
 │   ├── init/SKILL.md
+│   ├── migrate/SKILL.md
 │   ├── update/SKILL.md
 │   ├── interview/SKILL.md
 │   ├── challenge/SKILL.md
@@ -188,8 +198,9 @@ doc-sync/
 │   ├── index.md
 │   └── log.md
 ├── scripts/
-│   ├── make_fixture.sh   # scaffold a throwaway test repo
-│   └── validate_okf.py   # check a generated bundle for OKF conformance
+│   ├── make_fixture.sh      # scaffold a throwaway test repo (for init)
+│   ├── make_v1_fixture.sh   # scaffold a v1 docs/ tree (for migrate)
+│   └── validate_okf.py      # check a generated bundle for OKF conformance
 ├── LICENSE
 └── README.md
 ```
@@ -197,6 +208,9 @@ doc-sync/
 ## Development & testing
 
 The skills are prompts, so the real test is running them and inspecting the output.
+
+To test `/doc-sync:migrate`, use `scripts/make_v1_fixture.sh` instead — it scaffolds
+a v1-style `docs/` tree (no frontmatter, `CHANGELOG-FUNCTIONAL.md`, inline tags).
 
 ```bash
 # 1. scaffold a throwaway repo (migrations + 2 features)
