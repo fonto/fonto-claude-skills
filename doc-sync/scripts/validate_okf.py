@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """Validate an OKF knowledge bundle. Stdlib only, no deps.
 
+Works on any OKF v0.1 bundle, not just doc-sync output. Severities follow the
+spec's well-formedness rules — only the three hard rules are errors.
+
 Errors (exit 1):
   - a non-reserved .md without parseable frontmatter or with empty `type`
-  - bundle-root index.md missing `okf_version`
   - a reserved file (subdir index.md / any log.md) that carries frontmatter
-Warnings (exit 0): broken cross-links, log.md date headings not YYYY-MM-DD.
+Warnings (exit 0): missing/blank `okf_version` on the bundle-root index.md (it is
+  OPTIONAL per spec), broken cross-links, log.md date headings not YYYY-MM-DD.
 
 Usage: validate_okf.py [BUNDLE_DIR]   (default: docs/okf)
 """
 import sys, re, pathlib
 
-FM = re.compile(r"\A---\n(.*?)\n---\n", re.S)
+# Tolerate a leading BOM (﻿) and CRLF or LF line endings.
+FM = re.compile(r"\A﻿?---\r?\n(.*?)\r?\n---\r?\n", re.S)
 LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 DATE = re.compile(r"^##\s+\d{4}-\d{2}-\d{2}\s*$")
 
@@ -37,8 +41,9 @@ def main():
 
         if reserved:
             if is_root_index:
+                # okf_version is OPTIONAL per spec — recommend it, don't require it.
                 if not fm or not re.search(r"^okf_version:", fm, re.M):
-                    errors.append(f"{rel}: bundle-root index.md must declare okf_version")
+                    warnings.append(f"{rel}: bundle-root index.md should declare okf_version")
             elif fm:
                 errors.append(f"{rel}: reserved file must not have frontmatter")
             if f.name == "log.md":
