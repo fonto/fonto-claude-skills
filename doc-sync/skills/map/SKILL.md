@@ -1,38 +1,51 @@
 ---
 name: map
-description: "Generate or refresh a Documentation Index section in the project's root CLAUDE.md or AGENT.md, pointing to all docs/ files with one-line descriptions so coding assistants can find them on demand. Trigger with /doc-sync:map"
+description: "Refresh the OKF index.md files inside the knowledge bundle AND a Documentation Index section in the project's root CLAUDE.md or AGENT.md, pointing to the bundle so coding assistants can find it on demand. Trigger with /doc-sync:map"
 ---
 
-# map — Generate Documentation Index in CLAUDE.md / AGENT.md
+# map — Generate OKF Indexes + Documentation Index in CLAUDE.md / AGENT.md
 
-**Announce:** "I'm using the doc-sync plugin to generate the documentation index."
+**Announce:** "I'm using the doc-sync plugin to refresh the bundle indexes."
 
 ## Purpose
 
-Inject a compact, scannable index into the project's root `CLAUDE.md` (or `AGENT.md`) so coding assistants know where to find documentation without loading it all into context upfront. This is safe to run repeatedly — the section is delimited and replaced, never duplicated.
+Two jobs:
+1. **Inside the bundle** — regenerate the OKF `index.md` files (bundle root + each
+   subdirectory) so the bundle is self-describing for progressive disclosure.
+2. **In CLAUDE.md / AGENT.md** — inject a compact pointer to the bundle so coding
+   assistants know it exists and where to enter it.
+
+Both are safe to run repeatedly — index files are regenerated; the CLAUDE.md section
+is delimited and replaced, never duplicated.
+
+## Locate the Bundle
+
+- If a path argument is given, use it.
+- Otherwise find the bundle root: the `index.md` whose frontmatter contains
+  `okf_version:`. Fallback: `docs/okf/`, then `docs/`. `<bundle>/` refers to it below.
+- If no bundle exists → stop and suggest running `/doc-sync:init` first.
 
 ## Process
 
-### Step 1: Verify docs/ exists
+### Step 1: List the bundle's concepts
 
-- If `docs/` does not exist at the project root → stop and suggest running `/doc-sync:init` first
-- List all files in `docs/`: OVERVIEW.md, ARCHITECTURE.md, CHANGELOG-FUNCTIONAL.md, features/*.md, decisions/*.md
+- List all concept files: `OVERVIEW.md`, `ARCHITECTURE.md`, `COVERAGE.md`,
+  `features/*.md`, `decisions/*.md`, `data/*.md`, plus reserved `log.md`.
+- For each concept, read its one-line description from the frontmatter `description`
+  (fall back to `title`, then the H1, then a humanized filename). Strip epistemic tags.
+  Keep descriptions under 80 characters.
 
-### Step 2: Extract descriptions
+### Step 2: Regenerate OKF index.md files
 
-For each file found, extract a one-line description:
+- **Bundle root `<bundle>/index.md`** — frontmatter `okf_version: "0.1"` ONLY, then
+  sections (Overview / Features / Data / Decisions / History) listing concepts as
+  bullets: `[link](relative/path.md) — description`.
+- **`features/index.md`, `decisions/index.md`, `data/index.md`** — NO frontmatter, a
+  group heading, then one bullet per concept in that directory.
+- Use `templates/index.md` as the pattern. Omit `COVERAGE.md` from the listings
+  (meta-file, not reference material).
 
-| File | Source |
-|------|--------|
-| `docs/OVERVIEW.md` | Fixed: "Project purpose, tech stack, entry points, functional blocks" |
-| `docs/ARCHITECTURE.md` | Fixed: "Component map, data flows, external dependencies, data models" |
-| `docs/CHANGELOG-FUNCTIONAL.md` | Fixed: "Functional evolution history" |
-| `docs/features/<block>.md` | Read the file: extract first sentence of the "Purpose" section, or the H1 title |
-| `docs/decisions/<n>-<name>.md` | Read the file: extract the H1 title, or humanize the filename (e.g. `001-postgresql` → "PostgreSQL selection") |
-
-Keep descriptions under 80 characters. Remove epistemic tags from extracted text.
-
-### Step 3: Select target file
+### Step 3: Select target file for the CLAUDE.md pointer
 
 1. If `CLAUDE.md` exists at project root → use it
 2. Else if `AGENT.md` exists → use it
@@ -40,21 +53,23 @@ Keep descriptions under 80 characters. Remove epistemic tags from extracted text
 
 ### Step 4: Inject or replace the map section
 
-**Map format:**
+**Map format** (`<bundle>` is the actual path, e.g. `docs/okf`):
 
 ```markdown
 <!-- doc-sync:map:start -->
 ## Documentation Index
 
-> Consult these files on demand — load only what's relevant to your task.
+> OKF knowledge bundle at `<bundle>/`. Consult on demand — load only what's relevant.
 
 | File | Description |
 |------|-------------|
-| [docs/OVERVIEW.md](docs/OVERVIEW.md) | Project purpose, tech stack, entry points, functional blocks |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Component map, data flows, external dependencies, data models |
-| [docs/features/auth.md](docs/features/auth.md) | <extracted description> |
-| [docs/decisions/001-db.md](docs/decisions/001-db.md) | <extracted description> |
-| [docs/CHANGELOG-FUNCTIONAL.md](docs/CHANGELOG-FUNCTIONAL.md) | Functional evolution history |
+| [<bundle>/index.md](<bundle>/index.md) | OKF bundle entry — start here (progressive disclosure) |
+| [<bundle>/OVERVIEW.md](<bundle>/OVERVIEW.md) | Project purpose, tech stack, entry points, functional blocks |
+| [<bundle>/ARCHITECTURE.md](<bundle>/ARCHITECTURE.md) | Component map, data flows, external dependencies |
+| [<bundle>/data/index.md](<bundle>/data/index.md) | Data catalog — one concept per table |
+| [<bundle>/features/auth.md](<bundle>/features/auth.md) | <extracted description> |
+| [<bundle>/decisions/001-db.md](<bundle>/decisions/001-db.md) | <extracted description> |
+| [<bundle>/log.md](<bundle>/log.md) | Functional change history |
 <!-- doc-sync:map:end -->
 ```
 
@@ -65,11 +80,14 @@ Keep descriptions under 80 characters. Remove epistemic tags from extracted text
 
 ### Step 5: Confirm
 
-Report: "Documentation map updated in `<filename>` — N files indexed."
+Report: "Bundle indexes regenerated and map updated in `<filename>` — N concepts indexed."
 
 ## Key Rules
 
 - Never touch content outside the `<!-- doc-sync:map:start/end -->` delimiters
+- Bundle-root `index.md` is the ONLY index with frontmatter (`okf_version` only);
+  subdirectory `index.md` files have none
 - Descriptions must be one line, under 80 characters, no epistemic tags
-- Rows are ordered: OVERVIEW → ARCHITECTURE → features (alphabetical) → decisions (numbered) → CHANGELOG-FUNCTIONAL
-- If a `docs/COVERAGE.md` exists, omit it from the map (it's a meta-file, not reference material)
+- Row order: index → OVERVIEW → ARCHITECTURE → data → features (alphabetical) →
+  decisions (numbered) → log
+- Omit `<bundle>/COVERAGE.md` from both the index.md files and the CLAUDE.md map

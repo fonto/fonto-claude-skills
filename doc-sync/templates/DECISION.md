@@ -1,8 +1,16 @@
+---
+type: Decision
+title: {NNN} — {Decision Title}
+description: {One-line summary of the decision}
+timestamp: {YYYY-MM-DDThh:mm:ssZ}
+status: {Proposed | Accepted | Deprecated | Superseded by NNN}
+source: {[Declared] — who provided this | [Inference] — deduced from code}
+confidence: {declared | inference}
+---
+
 # {NNN} — {Decision Title}
 
-**Date:** {YYYY-MM-DD}
-**Status:** {Proposed | Accepted | Deprecated | Superseded by NNN}
-**Source:** {[Declared] — who provided this | [Inference] — deduced from code}
+> Status: {Proposed | Accepted | Deprecated | Superseded by NNN} · Source: {who/what}
 
 ## Context
 

@@ -1,3 +1,11 @@
+---
+type: Overview
+title: {Project Name}
+description: {One-line summary of what this project is}
+timestamp: {YYYY-MM-DDThh:mm:ssZ}
+confidence: mixed
+---
+
 # {Project Name}
 
 > [Code] Auto-generated from project configuration. Last updated: {date}

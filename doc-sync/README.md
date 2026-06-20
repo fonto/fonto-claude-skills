@@ -1,10 +1,22 @@
 # doc-sync
 
-A Claude Code plugin that maintains functional documentation in sync with code evolution.
+A Claude Code plugin that maintains functional documentation in sync with code
+evolution, emitting an **OKF (Open Knowledge Format) knowledge bundle**.
 
 ## Why
 
 AI-assisted development generates code through ephemeral conversations. Without a dedicated mechanism, documentation drifts from code within days. This plugin forces synchronization by integrating doc maintenance into the development flow.
+
+## OKF conformance
+
+The generated docs are an [Open Knowledge Format v0.1](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
+*Knowledge Bundle*: a directory tree of markdown files where every non-reserved
+file carries YAML frontmatter with a non-empty `type`, plus reserved `index.md`
+(progressive-disclosure listings) and `log.md` (dated history) files. This makes the
+docs portable, diffable, and readable by both humans and agents without tooling.
+
+doc-sync keeps its signature **epistemic tags** inline in the body (legal OKF prose)
+and additionally surfaces a document-level `confidence` key in the frontmatter.
 
 ## Installation
 
@@ -28,17 +40,23 @@ claude --plugin-dir /path/to/doc-sync
 
 Copy the `doc-sync/` folder to `~/.claude/skills/` (personal) or `.claude/skills/` in your project (project-scoped).
 
-## The 5 Skills
+## The 7 Skills
 
 All skills are namespaced under `doc-sync`:
 
 | Command | When to use | Duration |
 |---------|------------|----------|
-| `/doc-sync:init` | First run on an existing project | 5-20 min |
+| `/doc-sync:init [path]` | First run on an existing project (bundle defaults to `docs/okf/`) | 5-20 min |
+| `/doc-sync:migrate [src] [dst]` | One-time upgrade of a v1 `docs/` tree to a v2 OKF bundle | 3-10 min |
 | `/doc-sync:update` | After each functional change | 1-3 min |
 | `/doc-sync:interview` | To capture tacit knowledge | 5-30 min (interactive) |
 | `/doc-sync:challenge` | Periodic review or post-refactoring | 3-10 min |
 | `/doc-sync:coverage` | Measure completeness | 1-2 min |
+| `/doc-sync:map` | Refresh bundle indexes + CLAUDE.md pointer | < 1 min |
+
+The bundle location defaults to `docs/okf/` and is overridable by passing a path to
+`/doc-sync:init`. Other skills auto-discover the bundle via the `okf_version` marker
+in its root `index.md`.
 
 ## Quick Start
 
@@ -58,7 +76,7 @@ claude → [asks questions one at a time about unclear areas]
 you    → "Add a password reset endpoint"
 claude → [codes the endpoint]
 you    → /doc-sync:update
-claude → [updates docs/features/auth.md + CHANGELOG-FUNCTIONAL.md]
+claude → [updates docs/okf/features/auth.md + appends to docs/okf/log.md]
 you    → "commit"
 claude → [commits code + doc together]
 ```
@@ -100,20 +118,47 @@ The AI reads code and deduces intentions. Sometimes it's right, sometimes not. T
 
 Goal: maximize `[Code]` and `[Declared]`, minimize `[To confirm]`.
 
-## Generated Documentation Structure
+The inline tags are summarized at the document level by the frontmatter `confidence`
+key (`code` | `inference` | `to-confirm` | `declared` | `mixed`).
+
+## Generated Documentation Structure (OKF bundle)
+
+Default location `docs/okf/` (override with `/doc-sync:init <path>`):
 
 ```
-docs/
-├── OVERVIEW.md              # Vision, stack, macro architecture
-├── ARCHITECTURE.md          # Components, dependencies, data flows
-├── CHANGELOG-FUNCTIONAL.md  # Functional evolution journal
-├── COVERAGE.md              # Coverage map (auto-generated)
-├── features/                # One file per functional block
-│   ├── auth.md
-│   └── ...
-└── decisions/               # Architecture Decision Records
-    ├── 001-choice-of-db.md
-    └── ...
+docs/okf/                    # the OKF Knowledge Bundle
+├── index.md                 # RESERVED — bundle entry, frontmatter = okf_version only
+├── log.md                   # RESERVED — functional history (dated, newest first)
+├── OVERVIEW.md              # type: Overview      — vision, stack, macro architecture
+├── ARCHITECTURE.md          # type: Architecture  — components, dependencies, data flows
+├── COVERAGE.md              # type: Coverage Report (auto-generated)
+├── features/                # type: Feature — one concept per functional block
+│   ├── index.md             # RESERVED — listing (no frontmatter)
+│   └── auth.md
+├── decisions/               # type: Decision — Architecture Decision Records
+│   ├── index.md
+│   └── 001-choice-of-db.md
+└── data/                    # type: "<DB> Table" — data catalog, one concept per table
+    ├── index.md
+    └── users.md
+```
+
+Every concept carries frontmatter (`type` required). FKs and cross-references are
+markdown links between concepts; external sources go under a `# Citations` heading.
+
+### Migrating from v1.x
+
+v1 wrote a tag-only `docs/` tree with no frontmatter and a `CHANGELOG-FUNCTIONAL.md`.
+Run **`/doc-sync:migrate`** once — it transforms the tree in place (it does *not*
+regenerate from code, so human `[Declared]` content is preserved): moves `docs/` →
+`docs/okf/`, adds `type`/`confidence` frontmatter, converts the changelog to
+`log.md`, lifts decisions, extracts the new `data/` catalog, and generates the
+`index.md` files. It finishes by running the OKF validator.
+
+```
+you    → /doc-sync:migrate
+claude → [moves tree, adds frontmatter, builds data/ + index.md, validates]
+claude → "Migrated 9 concepts, extracted 3 tables, 0 OKF errors."
 ```
 
 ## Best Practices
@@ -138,18 +183,46 @@ doc-sync/
 │   └── plugin.json
 ├── skills/
 │   ├── init/SKILL.md
+│   ├── migrate/SKILL.md
 │   ├── update/SKILL.md
 │   ├── interview/SKILL.md
 │   ├── challenge/SKILL.md
-│   └── coverage/SKILL.md
+│   ├── coverage/SKILL.md
+│   └── map/SKILL.md
 ├── templates/
 │   ├── OVERVIEW.md
 │   ├── ARCHITECTURE.md
 │   ├── FEATURE.md
 │   ├── DECISION.md
-│   └── CHANGELOG-FUNCTIONAL.md
+│   ├── TABLE.md
+│   ├── index.md
+│   └── log.md
+├── scripts/
+│   ├── make_fixture.sh      # scaffold a throwaway test repo (for init)
+│   ├── make_v1_fixture.sh   # scaffold a v1 docs/ tree (for migrate)
+│   └── validate_okf.py      # check a generated bundle for OKF conformance
 ├── LICENSE
 └── README.md
+```
+
+## Development & testing
+
+The skills are prompts, so the real test is running them and inspecting the output.
+
+To test `/doc-sync:migrate`, use `scripts/make_v1_fixture.sh` instead — it scaffolds
+a v1-style `docs/` tree (no frontmatter, `CHANGELOG-FUNCTIONAL.md`, inline tags).
+
+```bash
+# 1. scaffold a throwaway repo (migrations + 2 features)
+doc-sync/scripts/make_fixture.sh /tmp/okf-test
+
+# 2. run the skills against it in a fresh session (loads the local plugin)
+cd /tmp/okf-test && claude --plugin-dir /path/to/doc-sync
+#    then: /doc-sync:init  →  /doc-sync:update  →  /doc-sync:challenge  →  /doc-sync:coverage
+
+# 3. mechanically validate the generated bundle (no LLM)
+python3 /path/to/doc-sync/scripts/validate_okf.py /tmp/okf-test/docs/okf
+#    errors → non-conformant; warnings → broken links / non-ISO log dates
 ```
 
 ## License

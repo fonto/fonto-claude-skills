@@ -1,11 +1,18 @@
 ---
 name: update
-description: "Use after any code change with functional impact to sync documentation. Analyzes git diff, updates affected feature docs, and adds a functional changelog entry. Trigger with /doc-sync:update"
+description: "Use after any code change with functional impact to sync documentation. Analyzes git diff, updates affected OKF concepts, refreshes their frontmatter, and adds a functional entry to log.md. Trigger with /doc-sync:update"
 ---
 
 # update — Post-Change Documentation Sync
 
-**Announce:** "I'm using the doc-sync plugin to update documentation after this change."
+**Announce:** "I'm using the doc-sync plugin to update the OKF bundle after this change."
+
+## Locate the Bundle
+
+- If a path argument is given, use it.
+- Otherwise find the bundle root: the `index.md` whose frontmatter contains
+  `okf_version:`. Fallback if none found: `docs/okf/`, then `docs/`.
+- `<bundle>/` refers to that root below. If no bundle exists, suggest `/doc-sync:init`.
 
 ## Epistemic Tags
 
@@ -29,25 +36,36 @@ description: "Use after any code change with functional impact to sync documenta
 
 ### Step 2: If Functional Change Detected
 
-**Identify impacted docs:**
+**Identify impacted concepts:**
 - Map changed files to their functional block
-- Find the corresponding `docs/features/*.md` file(s)
-- If no feature doc exists for the impacted block, create one
+- Find the corresponding `<bundle>/features/*.md` concept(s)
+- If no feature concept exists for the impacted block, create one (with frontmatter)
 
-**Update feature docs:**
+**Update feature concepts:**
 - Modify the relevant sections
 - Preserve existing epistemic tags on unchanged content
 - New content: tag `[Code]` if directly verifiable, `[Inference]` if deduced
 - Remove or update any content that is now incorrect
+- **Refresh frontmatter** of each touched concept: bump `timestamp` (ISO 8601) and
+  recompute `confidence` from the inline tags now present
 
-**Add changelog entry to `docs/CHANGELOG-FUNCTIONAL.md`:**
+**If the schema/data layer changed** (migration added, model field changed):
+- Update the affected `<bundle>/data/<table>.md` concept's `# Schema` (columns,
+  nullability, constraints — read the DDL/model literally, `NOT NULL`/`UNIQUE`
+  exactly as written) and FK links
+- Add a new table concept if a new table/collection appeared (use `templates/TABLE.md`)
+- Refresh that concept's `timestamp`/`confidence`
+
+**Add an entry to `<bundle>/log.md`** (RESERVED OKF file — no frontmatter, newest
+first; create the date heading if today's is absent). Functional changes only:
 ```
-## YYYY-MM-DD — <short description>
-- **What changed:** <functional description — what the user/system sees differently>
-- **Why:** <rationale if known, otherwise [To confirm]>
-- **Files impacted:** <list of code files>
-- **Doc updated:** <list of docs/*.md files modified>
+## YYYY-MM-DD
+
+* **Update**: <functional description — what the user/system sees differently>.
+  Why: <rationale if known, otherwise [To confirm]>. Impact: <features/blocks>.
+  Docs: <concepts updated>.
 ```
+(Use `**Creation**` for a new feature, `**Deprecation**` for a removal.)
 
 **Update ARCHITECTURE.md if needed:**
 - New module/service/route/model added
@@ -61,13 +79,18 @@ description: "Use after any code change with functional impact to sync documenta
 
 ### Step 4: Update COVERAGE.md
 
-- If new modules/routes/components appeared, add them to the coverage table
+- If new modules/routes/components/tables appeared, add them to the coverage table
 - Update tag distribution if changed
+- Keep its frontmatter (`type: Coverage Report`)
 
-### Step 4.5: Refresh Documentation Map
+### Step 4.5: Refresh Indexes & Documentation Map
 
-- If a `docs/features/*.md` or `docs/decisions/*.md` was **created or deleted** in this cycle → regenerate the full map section (same logic as `doc-sync:init` Step 5)
-- If only existing docs were modified (no new/deleted files) → skip, map is still accurate
+- If a concept under `features/`, `decisions/`, or `data/` was **created or deleted**:
+  - update the matching `<dir>/index.md` (OKF progressive disclosure), and
+  - update the bundle-root `<bundle>/index.md` listing, and
+  - regenerate the CLAUDE.md map section (same logic as `doc-sync:init` Step 5)
+- If only existing concepts were modified (no new/deleted files) → indexes are still
+  accurate, skip
 
 ### Step 5: Stage Together
 
