@@ -11,7 +11,7 @@
       "name": "doc-sync",
       "description": "Maintain functional documentation in sync with code evolution. Retrodocument existing codebases, keep docs updated after changes, capture tacit knowledge, challenge accuracy, and measure coverage.",
       "source": "./doc-sync",
-      "version": "1.0.0",
+      "version": "2.0.1",
       "category": "documentation"
     }
   ]

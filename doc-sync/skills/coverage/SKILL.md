@@ -133,3 +133,4 @@ Stage and commit: `docs: coverage report updated`
 - **Prioritize action items** — undocumented high-traffic blocks first, suspect inferences in edge cases last
 - **Track trends** — if previous COVERAGE.md exists, note improvements or regressions
 - **Be honest** — a project with 100% coverage but 80% `[Inference]` is not well-documented
+- **Review before commit:** show the diff and confirm with the user before running `git commit`.

@@ -5,7 +5,7 @@ set -euo pipefail
 DIR="${1:-/tmp/okf-test}"
 PLUGIN_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-if [ -e "$DIR" ]; then
+if [ -e "$DIR" ] || [ -L "$DIR" ]; then
   echo "refusing: $DIR already exists (rm it first or pass another path)" >&2
   exit 1
 fi

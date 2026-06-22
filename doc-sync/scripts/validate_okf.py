@@ -31,6 +31,7 @@ def main():
         print(f"bundle not found: {root}")
         return 1
     errors, warnings = [], []
+    root_res = root.resolve()
 
     for f in sorted(root.rglob("*.md")):
         rel = f.relative_to(root)
@@ -65,7 +66,11 @@ def main():
             if not path.endswith(".md"):
                 continue
             dest = (root / path.lstrip("/")) if path.startswith("/") else (f.parent / path)
-            if not dest.resolve().exists():
+            rdest = dest.resolve()
+            if rdest != root_res and root_res not in rdest.parents:
+                warnings.append(f"{rel}: link escapes bundle -> {target}")
+                continue
+            if not rdest.exists():
                 warnings.append(f"{rel}: broken link -> {target}")
 
     for w in warnings:
