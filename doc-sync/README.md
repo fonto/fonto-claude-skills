@@ -40,37 +40,46 @@ claude --plugin-dir /path/to/doc-sync
 
 Copy the `doc-sync/` folder to `~/.claude/skills/` (personal) or `.claude/skills/` in your project (project-scoped).
 
-## The 7 Skills
+## The skills
 
-All skills are namespaced under `doc-sync`:
+All skills are namespaced under `doc-sync`. You don't need them all on day one —
+follow the flow: **create** a bundle, **keep it in sync**, then **keep it trustworthy**.
 
-| Command | When to use | Duration |
-|---------|------------|----------|
-| `/doc-sync:init [path]` | First run on an existing project (bundle defaults to `docs/okf/`) | 5-20 min |
-| `/doc-sync:migrate [src] [dst]` | One-time upgrade of a v1 `docs/` tree to a v2 OKF bundle | 3-10 min |
-| `/doc-sync:update` | After each functional change | 1-3 min |
-| `/doc-sync:interview` | To capture tacit knowledge | 5-30 min (interactive) |
-| `/doc-sync:challenge` | Periodic review or post-refactoring | 3-10 min |
-| `/doc-sync:coverage` | Measure completeness | 1-2 min |
-| `/doc-sync:map` | Refresh bundle indexes + CLAUDE.md pointer | < 1 min |
+### 1. Start here — create your bundle
 
-The bundle location defaults to `docs/okf/` and is overridable by passing a path to
-`/doc-sync:init`. Other skills auto-discover the bundle via the `okf_version` marker
-in its root `index.md`.
+The right entry point depends on what you already have:
 
-## Quick Start
+| You have… | Use | What it does |
+|-----------|-----|--------------|
+| code only, no docs | `/doc-sync:init [path]` | retrodocument the bundle from the code |
+| a doc-sync **v1** `docs/` tree | `/doc-sync:migrate [src] [dst]` | one-time structural upgrade to an OKF bundle |
+| **scattered existing docs** (README, design notes, old ADRs, wikis) | `/doc-sync:ingest-existing-docs [path…]` | fold the relevant, still-true parts in |
 
-### Retrodocument an existing project
+The bundle defaults to `docs/okf/` (override by passing a path to `/doc-sync:init`).
+Every other skill auto-discovers it via the `okf_version` marker in its root `index.md`.
 
 ```
 you    → /doc-sync:init
-claude → [analyzes code, generates entire docs/ structure]
+claude → [analyzes code, generates the whole docs/okf/ bundle]
 claude → "I have 14 [To confirm] items. Want to run doc-sync:interview?"
 you    → "yes"
-claude → [asks questions one at a time about unclear areas]
 ```
 
-### Daily workflow: after a change
+Already have a bundle plus some old docs lying around? Point the new skill at them —
+it verifies each claim against the current code and only asks you when something
+conflicts:
+
+```
+you    → /doc-sync:ingest-existing-docs LEGACY-DESIGN.md docs/old-wiki/
+claude → [reads them, checks each claim vs code, asks only on conflicts,
+          merges the rest, archives the sources]
+claude → "Ingested 2 docs: 9 elements merged, 1 conflict resolved, sources archived."
+```
+
+### 2. Keep it in sync — after each change
+
+`/doc-sync:update` — run after any functional code change (skip pure refactors). It
+reads the `git diff`, updates the affected concepts, and appends to `log.md`.
 
 ```
 you    → "Add a password reset endpoint"
@@ -81,16 +90,31 @@ you    → "commit"
 claude → [commits code + doc together]
 ```
 
-### Weekly review
+### 3. Keep it trustworthy — mature & verify
+
+The bundle is only as good as its tags. These three raise confidence over time:
+
+| Command | When | What it does |
+|---------|------|--------------|
+| `/doc-sync:challenge` | weekly / post-refactor | cross-checks docs vs code; flags drift, dead docs, undocumented code |
+| `/doc-sync:interview` | a colleague is available | asks about `[Inference]` / `[To confirm]` items → `[Declared]` |
+| `/doc-sync:coverage` | anytime | measures completeness + tag distribution |
 
 ```
 you    → /doc-sync:challenge
 claude → [report: 2 inconsistencies, 1 dead doc, 3 undocumented features]
 you    → "fix what you can"
 claude → [fixes obvious issues, flags the rest as [To confirm]]
-you    → /doc-sync:coverage
-claude → [generates coverage map]
 ```
+
+This is the maturation loop — `[Inference] → interview/challenge → [Declared]/[Code]`
+(see [Epistemic Tags](#epistemic-tags)).
+
+### 4. Plumbing
+
+`/doc-sync:map` (< 1 min) — refresh the bundle `index.md` files and the CLAUDE.md /
+AGENT.md pointer. The other skills run this for you when concepts are added or removed;
+invoke it manually only if the indexes ever look stale.
 
 ## Epistemic Tags
 
@@ -184,6 +208,7 @@ doc-sync/
 ├── skills/
 │   ├── init/SKILL.md
 │   ├── migrate/SKILL.md
+│   ├── ingest-existing-docs/SKILL.md
 │   ├── update/SKILL.md
 │   ├── interview/SKILL.md
 │   ├── challenge/SKILL.md
@@ -198,9 +223,10 @@ doc-sync/
 │   ├── index.md
 │   └── log.md
 ├── scripts/
-│   ├── make_fixture.sh      # scaffold a throwaway test repo (for init)
-│   ├── make_v1_fixture.sh   # scaffold a v1 docs/ tree (for migrate)
-│   └── validate_okf.py      # check a generated bundle for OKF conformance
+│   ├── make_fixture.sh         # scaffold a throwaway test repo (for init)
+│   ├── make_v1_fixture.sh      # scaffold a v1 docs/ tree (for migrate)
+│   ├── make_ingest_fixture.sh  # scaffold a repo + stray doc (for ingest-existing-docs)
+│   └── validate_okf.py         # check a generated bundle for OKF conformance
 ├── LICENSE
 └── README.md
 ```
@@ -210,7 +236,10 @@ doc-sync/
 The skills are prompts, so the real test is running them and inspecting the output.
 
 To test `/doc-sync:migrate`, use `scripts/make_v1_fixture.sh` instead — it scaffolds
-a v1-style `docs/` tree (no frontmatter, `CHANGELOG-FUNCTIONAL.md`, inline tags).
+a v1-style `docs/` tree (no frontmatter, `CHANGELOG-FUNCTIONAL.md`, inline tags). To
+test `/doc-sync:ingest-existing-docs`, use `scripts/make_ingest_fixture.sh` — it adds
+a stray `LEGACY-DESIGN.md` mixing a true fact, a stale one, and a rationale; run
+`/doc-sync:init` first, then ingest it.
 
 ```bash
 # 1. scaffold a throwaway repo (migrations + 2 features)
