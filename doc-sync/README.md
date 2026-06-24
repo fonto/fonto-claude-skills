@@ -79,13 +79,16 @@ claude → "Ingested 2 docs: 9 elements merged, 1 conflict resolved, sources arc
 ### 2. Keep it in sync — after each change
 
 `/doc-sync:update` — run after any functional code change (skip pure refactors). It
-reads the `git diff`, updates the affected concepts, and appends to `log.md`.
+reads the `git diff`, captures the session/plan/ticket intent behind the change,
+updates the affected concepts, and appends to `log.md`.
 
 ```
 you    → "Add a password reset endpoint"
 claude → [codes the endpoint]
 you    → /doc-sync:update
-claude → [updates docs/okf/features/auth.md + appends to docs/okf/log.md]
+claude → "Is there a plan, spec, or ticket notes to fold in? (file path / paste / no)"
+you    → no  (or paste ticket text, or give a file path)
+claude → [updates docs/okf/features/auth.md + appends to docs/okf/log.md with Why: filled]
 you    → "commit"
 claude → [commits code + doc together]
 ```

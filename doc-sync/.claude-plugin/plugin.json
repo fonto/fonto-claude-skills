@@ -1,7 +1,7 @@
 {
   "name": "doc-sync",
   "description": "Maintain functional documentation in sync with code evolution as an OKF (Open Knowledge Format) knowledge bundle. Retrodocument existing codebases, ingest existing project docs, keep docs updated after changes, capture tacit knowledge, challenge accuracy, and measure coverage.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {
     "name": "Olivier Fontenelle"
   }
