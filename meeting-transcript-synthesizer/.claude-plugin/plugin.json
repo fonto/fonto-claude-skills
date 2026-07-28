@@ -1,0 +1,8 @@
+{
+  "name": "meeting-transcript-synthesizer",
+  "description": "Turn a meeting transcript into a reliable, prioritized, actionable compte rendu: executive summary, decisions, actions, risks and open questions, with source traceability and a fidelity check.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Olivier Fontenelle"
+  }
+}

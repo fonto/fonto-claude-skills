@@ -13,6 +13,13 @@
       "source": "./doc-sync",
       "version": "2.2.0",
       "category": "documentation"
+    },
+    {
+      "name": "meeting-transcript-synthesizer",
+      "description": "Turn a meeting transcript into a reliable compte rendu: executive summary, decisions, actions, risks and open questions, with source traceability and a fidelity check.",
+      "source": "./meeting-transcript-synthesizer",
+      "version": "1.0.0",
+      "category": "productivity"
     }
   ]
 }
