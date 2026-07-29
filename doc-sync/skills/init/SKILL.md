@@ -39,18 +39,25 @@ sources:                      # optional; omit entirely when there's no addressa
     author: <human:<id> | team:<id>>
     last_modified: <YYYY-MM-DD>
 confidence: <code | inference | to-confirm | declared | mixed>
-status: <draft | stable | deprecated> # only when not stable, except on Decision concepts
 ---
 ```
 
 `generated` is always written — `by: doc-sync/2.3.0` **verbatim, exactly as
 written here**, `at` the current UTC timestamp. Do not try to read the version
 from `plugin.json`: the plugin lives outside the documented project and that
-read will fail. The literal is bumped with the plugin release. **`init` never
-writes
-`verified`**: it is documenting the codebase for the first time, so every
-concept it produces is legitimately unverified until `challenge` or
-`interview` confirms it later.
+read will fail. The literal is bumped with the plugin release.
+
+**`init` never writes `verified`**: it is documenting the codebase for the first
+time, so every concept it produces is legitimately unverified until `challenge`
+or `interview` confirms it later.
+
+**`init` never writes `status` either**, with the single exception of a
+`decisions/` concept, where it is mapped from the ADR state (Proposed→`draft`,
+Accepted→`stable`, Deprecated/Superseded→`deprecated`). `status` is absent from
+the contract above on purpose. Absence means `stable`, which is what a freshly
+documented concept is. A concept holding `[To confirm]` items is **not** a
+draft: unresolved questions are what the epistemic tags express, and `status`
+tracks the lifecycle of the documented thing, not your confidence in the prose.
 
 `confidence` is the document-level summary of the inline epistemic tags below
 (use the lowest/dominant level present; `mixed` when several coexist).
@@ -159,7 +166,9 @@ starting points. Adapt to the specific project. **Every concept gets frontmatter
 - Dependencies on other blocks
 - `sources` frontmatter entry (with `resource`) for each external claim, plus a
   `[^<id>]` footnote in the body where a claim maps to one source; write no
-  entry when there's no addressable path or URL
+  entry when there's no addressable path or URL. **A footnote may only key a
+  `sources[].id`** — a reference to another concept in this bundle is a plain
+  markdown link (`[users](/data/users.md)`), never a footnote
 
 **data/<table>.md** (`type: "<DB> Table"`, one per table/collection from Step 2):
 - `resource:` canonical URI (e.g. `postgres://<db>/public/users`)

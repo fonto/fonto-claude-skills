@@ -143,7 +143,10 @@ Apply the same triage as `doc-sync:ingest-existing-docs` Steps 2–5 and 7
     — a repo file path or a URL — typically the plan/spec file from 2b, when the user
     gave a path. Session capture and pasted text have **no addressable URI**: do not
     invent one and do not write a `sources` entry for them — that intent stays in the
-    `log.md` prose from Step 2, where it already goes.
+    `log.md` prose from Step 2, where it already goes;
+  - a `[^<id>]` footnote may only key a `sources[].id`. To point at another concept
+    in this bundle, write a plain markdown link (`[001-…](/decisions/001-….md)`),
+    never a footnote — a footnote with no matching source is a dangling reference.
 
 - **Fill in the `Why:` field** of the `log.md` entry added in Step 2 from the captured
   rationale, tagged appropriately, with the source cited. If no rationale was captured,
