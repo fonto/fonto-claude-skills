@@ -51,6 +51,15 @@ description: "Use after any code change with functional impact to sync documenta
   — this is a machine rewrite, not a human confirmation. Bumping `generated.at` past
   any existing `verified[].at` voids that verification automatically; that is the
   intended behavior and needs no separate bookkeeping
+- **`generated.by` is invariant.** Edit `at` only, and leave `by` byte-for-byte as
+  it already is in the file. `by` names the *producer* of the document, not whoever
+  is editing it now. Never write `process:doc-sync-update`, `human:...`, or any
+  other actor there — an actor prefix in `generated.by` is always a bug. If a
+  concept somehow has no `generated` key at all, create it with
+  `by: doc-sync/2.3.0` verbatim
+- **Never invent `status`.** Leave it exactly as found, and do not add it because a
+  concept still holds `[To confirm]` items — unresolved questions are what the
+  epistemic tags are for. `stable` is the default and is expressed by omitting the key
 
 **If the schema/data layer changed** (migration added, model field changed):
 - Update the affected `<bundle>/data/<table>.md` concept's `# Schema` (columns,

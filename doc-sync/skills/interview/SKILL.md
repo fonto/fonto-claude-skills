@@ -90,6 +90,12 @@ After editing a concept, **refresh its frontmatter**:
   **Corrected** case) — that is a real content rewrite, distinct from confirming or
   re-tagging existing text. When you do bump it, append the `verified` entry with an
   `at` equal to or after the new `generated.at`, so the confirmation is not born void.
+- **`generated.by` is invariant.** Whether or not you bump `at`, leave `by`
+  byte-for-byte as found. The interviewee goes in `verified`, never in `generated.by`,
+  which names the producer of the document.
+- **Never invent `status`.** Confirming or correcting an assertion does not change a
+  concept's lifecycle; `status` is only set on Decision concepts, mapped from their ADR
+  state.
 - Add/refresh the matching `decisions/index.md` entry when a new Decision is created.
 
 **Decision concept template** (note the frontmatter — it is a real OKF concept). Creating

@@ -198,6 +198,15 @@ def main():
             generated, gen_bad = parse_generated(fm)
             if gen_bad:
                 warnings.append(f"{rel}: generated is malformed (needs by and at)")
+            if generated:
+                by = str(generated.get("by", ""))
+                if by.startswith(("process:", "human:")):
+                    # `generated.by` names the producer and is invariant. An actor
+                    # there means an editing pass overwrote it, which also destroys
+                    # whatever `verified` entry that pass should have appended.
+                    warnings.append(
+                        f"{rel}: generated.by is the actor {by!r} — it must name the "
+                        f"producer (e.g. doc-sync/2.3.0); actors belong in `verified`")
 
             verified, ver_bad = parse_verified(fm)
             if ver_bad:

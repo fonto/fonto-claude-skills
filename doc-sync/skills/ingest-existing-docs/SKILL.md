@@ -99,9 +99,12 @@ For every candidate, check the current code where feasible and assign a tag:
 - Create any missing concept from `templates/` (`FEATURE.md`, `DECISION.md`,
   `TABLE.md`, `OVERVIEW.md`, `ARCHITECTURE.md`).
 - For every concept you touch or create:
-  - refresh frontmatter `generated.at` to now (ISO 8601 UTC). Never write `verified`
-    — a claim read from an old document and checked against code is not a human
-    confirmation of the concept;
+  - refresh frontmatter `generated.at` to now (ISO 8601 UTC), leaving `generated.by`
+    byte-for-byte as found (it names the producer and is invariant; never write an
+    actor such as `process:...` there). On a concept you create, `by` is
+    `doc-sync/2.3.0` verbatim. Never write `verified` — a claim read from an old
+    document and checked against code is not a human confirmation of the concept.
+    Never invent `status`;
   - recompute `confidence` from the inline tags now present (same mapping as
     `doc-sync:migrate`: mostly `[Code]`→`code`, mostly `[Declared]`→`declared`,
     mostly `[Inference]`→`inference`, any prominent `[To confirm]`→`to-confirm`,
