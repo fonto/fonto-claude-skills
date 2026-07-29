@@ -31,7 +31,7 @@ title: <display name>
 description: <one-line summary>
 resource: <repo path or URL>  # optional
 tags: [<tag>, ...]
-generated: { by: doc-sync/<plugin version>, at: <ISO 8601 UTC> }
+generated: { by: doc-sync/2.3.0, at: <ISO 8601 UTC> }
 sources:                      # optional; omit entirely when there's no addressable source
   - id: <slug>
     resource: <repo path or URL>       # REQUIRED within an entry
@@ -43,8 +43,11 @@ status: <draft | stable | deprecated> # only when not stable, except on Decision
 ---
 ```
 
-`generated` is always written — `by: doc-sync/<plugin version>` (read from
-`plugin.json`), `at` the current UTC timestamp. **`init` never writes
+`generated` is always written — `by: doc-sync/2.3.0` **verbatim, exactly as
+written here**, `at` the current UTC timestamp. Do not try to read the version
+from `plugin.json`: the plugin lives outside the documented project and that
+read will fail. The literal is bumped with the plugin release. **`init` never
+writes
 `verified`**: it is documenting the codebase for the first time, so every
 concept it produces is legitimately unverified until `challenge` or
 `interview` confirms it later.

@@ -82,8 +82,9 @@ For each non-reserved `.md` (everything except `index.md`/`log.md`):
   - `type` — from the table above
   - `title` — the H1, or a humanized filename
   - `description` — first sentence of the "Purpose" section, or the H1
-  - `generated: { by: doc-sync/<plugin version>, at: <date> }` — `by` reads the
-    plugin version from `plugin.json` (e.g. `doc-sync/2.3.0`); `at` is an existing
+  - `generated: { by: doc-sync/2.3.0, at: <date> }` — `by` is that literal
+    verbatim, never read from `plugin.json` (the plugin lives outside the
+    documented project, so that read fails); `at` is an existing
     `Last updated:` line, else the file's last git commit date, else today
     (ISO 8601 UTC). Never write `verified` — a migrated concept is unverified
     until `challenge` or `interview` confirms it.
@@ -115,7 +116,7 @@ For each non-reserved `.md` (everything except `index.md`/`log.md`):
 #### Step 4: Lift decisions into frontmatter
 
 For each `<bundle>/decisions/*.md`:
-- Frontmatter: `type: Decision`, `generated: { by: doc-sync/<plugin version>, at:
+- Frontmatter: `type: Decision`, `generated: { by: doc-sync/2.3.0, at:
   <the file's **Date:** line> }`, `status` mapped onto the OKF vocabulary
   (`Proposed→draft`, `Accepted→stable`, `Deprecated`/`Superseded→deprecated`),
   `confidence` per the mapping above. Do not write a `source:` key.

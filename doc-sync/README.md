@@ -276,6 +276,20 @@ doc-sync/
 └── README.md
 ```
 
+## Releasing
+
+Bump the version in **three** places, they must agree: `.claude-plugin/plugin.json`,
+the marketplace `marketplace.json`, and the `doc-sync/<version>` literal that the
+skills and templates stamp into `generated.by`:
+
+```bash
+grep -rn "doc-sync/[0-9]" skills/ templates/
+```
+
+The literal is hardcoded on purpose. The plugin is installed outside the project
+being documented, so reading `plugin.json` at generation time fails and the actor
+ends up stamped `doc-sync/unknown`.
+
 ## Development & testing
 
 The skills are prompts, so the real test is running them and inspecting the output.

@@ -3,7 +3,7 @@ type: Feature
 title: {Feature/Block Name}
 description: {One-line summary of this functional block}
 tags: [{tag}]
-generated: { by: doc-sync/{version}, at: {YYYY-MM-DDThh:mm:ssZ} }
+generated: { by: doc-sync/2.3.0, at: {YYYY-MM-DDThh:mm:ssZ} }
 # sources: write an entry only for a claim traceable to an addressable artifact
 # (a repo path or a URL) — `resource` is required on every entry. Omit this key
 # entirely when no claim below has an addressable source. A body claim
