@@ -46,15 +46,18 @@ description: "Use after any code change with functional impact to sync documenta
 - Preserve existing epistemic tags on unchanged content
 - New content: tag `[Code]` if directly verifiable, `[Inference]` if deduced
 - Remove or update any content that is now incorrect
-- **Refresh frontmatter** of each touched concept: bump `timestamp` (ISO 8601) and
-  recompute `confidence` from the inline tags now present
+- **Refresh frontmatter** of each touched concept: bump `generated.at` (ISO 8601 UTC)
+  and recompute `confidence` from the inline tags now present. Never write `verified`
+  — this is a machine rewrite, not a human confirmation. Bumping `generated.at` past
+  any existing `verified[].at` voids that verification automatically; that is the
+  intended behavior and needs no separate bookkeeping
 
 **If the schema/data layer changed** (migration added, model field changed):
 - Update the affected `<bundle>/data/<table>.md` concept's `# Schema` (columns,
   nullability, constraints — read the DDL/model literally, `NOT NULL`/`UNIQUE`
   exactly as written) and FK links
 - Add a new table concept if a new table/collection appeared (use `templates/TABLE.md`)
-- Refresh that concept's `timestamp`/`confidence`
+- Refresh that concept's `generated.at`/`confidence` (never `verified`)
 
 **Add an entry to `<bundle>/log.md`** (RESERVED OKF file — no frontmatter, newest
 first; create the date heading if today's is absent). Functional changes only:
@@ -125,10 +128,13 @@ Apply the same triage as `doc-sync:ingest-existing-docs` Steps 2–5 and 7
   content without explicit confirmation.
 
 - **Merge / create** concepts from `templates/`. For every concept touched or created:
-  - refresh `timestamp` (ISO 8601);
+  - refresh `generated.at` (ISO 8601 UTC); never write `verified`;
   - recompute `confidence` from the inline tags now present;
-  - add a `# Citations` entry naming the source: "session YYYY-MM-DD", the plan
-    filename, or "ticket notes".
+  - add a `sources` entry **only** when the content traces to an addressable artifact
+    — a repo file path or a URL — typically the plan/spec file from 2b, when the user
+    gave a path. Session capture and pasted text have **no addressable URI**: do not
+    invent one and do not write a `sources` entry for them — that intent stays in the
+    `log.md` prose from Step 2, where it already goes.
 
 - **Fill in the `Why:` field** of the `log.md` entry added in Step 2 from the captured
   rationale, tagged appropriately, with the source cited. If no rationale was captured,

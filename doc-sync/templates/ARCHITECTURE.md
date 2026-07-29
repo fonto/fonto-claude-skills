@@ -2,7 +2,7 @@
 type: Architecture
 title: Architecture — {Project Name}
 description: Component map, data flows, external dependencies, configuration
-timestamp: {YYYY-MM-DDThh:mm:ssZ}
+generated: { by: doc-sync/{version}, at: {YYYY-MM-DDThh:mm:ssZ} }
 confidence: mixed
 ---
 

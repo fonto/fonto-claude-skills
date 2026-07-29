@@ -11,7 +11,7 @@ This is the progressive-disclosure entry point: load only what's relevant.
 
 --- ROOT (<bundle>/index.md) ---
 ---
-okf_version: "0.1"
+okf_version: "0.2"
 ---
 
 # {Project Name} — Knowledge Bundle

@@ -99,12 +99,18 @@ For every candidate, check the current code where feasible and assign a tag:
 - Create any missing concept from `templates/` (`FEATURE.md`, `DECISION.md`,
   `TABLE.md`, `OVERVIEW.md`, `ARCHITECTURE.md`).
 - For every concept you touch or create:
-  - refresh frontmatter `timestamp` to today (ISO 8601);
+  - refresh frontmatter `generated.at` to now (ISO 8601 UTC). Never write `verified`
+    — a claim read from an old document and checked against code is not a human
+    confirmation of the concept;
   - recompute `confidence` from the inline tags now present (same mapping as
     `doc-sync:migrate`: mostly `[Code]`→`code`, mostly `[Declared]`→`declared`,
     mostly `[Inference]`→`inference`, any prominent `[To confirm]`→`to-confirm`,
     several coexist→`mixed`);
-  - add a `# Citations` entry naming the source document it came from.
+  - add a `sources` entry for the ingested document: `id` = a slug of its filename,
+    `resource` = its path in the repo after the Step 6 archive move
+    (`<docs-root>/_archive/ingested/...`), `title` = its title, `author` =
+    `human:<its git author email>`, `last_modified` = its last git commit date
+    (`YYYY-MM-DD`).
 
 ### Step 6: Archive the sources
 

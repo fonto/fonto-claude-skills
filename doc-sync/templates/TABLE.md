@@ -4,13 +4,23 @@ title: {table_name}
 description: {What this table holds, in one line}
 resource: {canonical URI, e.g. postgres://<db>/public/<table_name>}
 tags: [{domain}]
-timestamp: {YYYY-MM-DDThh:mm:ssZ}
+generated: { by: doc-sync/{version}, at: {YYYY-MM-DDThh:mm:ssZ} }
+# sources: write an entry only for a claim traceable to an addressable artifact
+# (a repo path or a URL) — `resource` is required on every entry. Omit this key
+# entirely when no claim below has an addressable source. A body claim
+# attributes to an entry with a `[^<id>]` footnote, `<id>` matching sources[].id.
+# Never invent a resource for session/ticket context alone.
+sources:
+  - id: {slug}
+    resource: {repo path or URL}
+    title: {source title}
+    last_modified: {YYYY-MM-DD}
 confidence: code
 ---
 
 # {table_name}
 
-[Code] {What this table stores and its role in the system.}
+[Code] {What this table stores and its role in the system.} [^{slug}]
 
 # Schema
 
@@ -46,6 +56,4 @@ Read the DDL / ORM model LITERALLY — do not guess:
 {a typical query against this table}
 ```
 
-# Citations
-
-{Only when claims come from external sources.}
+[^{slug}]: {Source title} — {resource}

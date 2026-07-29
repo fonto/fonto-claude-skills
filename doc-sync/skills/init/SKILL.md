@@ -7,7 +7,7 @@ description: "Use when retrodocumenting an existing codebase for the first time.
 
 **Announce:** "I'm using the doc-sync plugin to retrodocument this project as an OKF bundle."
 
-The output is a **Knowledge Bundle** conforming to Open Knowledge Format v0.1
+The output is a **Knowledge Bundle** conforming to Open Knowledge Format v0.2
 (https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md):
 a directory tree of markdown files where every non-reserved file carries YAML
 frontmatter with a non-empty `type`, and reserved files (`index.md`, `log.md`)
@@ -29,17 +29,31 @@ Only `type` is required by OKF. doc-sync also writes these producer keys:
 type: <Type>                  # REQUIRED — Overview | Architecture | Feature | Decision | "<DB> Table" | Coverage Report | Reference
 title: <display name>
 description: <one-line summary>
+resource: <repo path or URL>  # optional
 tags: [<tag>, ...]
-timestamp: <ISO 8601 datetime>
+generated: { by: doc-sync/<plugin version>, at: <ISO 8601 UTC> }
+sources:                      # optional; omit entirely when there's no addressable source
+  - id: <slug>
+    resource: <repo path or URL>       # REQUIRED within an entry
+    title: <source title>
+    author: <human:<id> | team:<id>>
+    last_modified: <YYYY-MM-DD>
 confidence: <code | inference | to-confirm | declared | mixed>
+status: <draft | stable | deprecated> # only when not stable, except on Decision concepts
 ---
 ```
+
+`generated` is always written — `by: doc-sync/<plugin version>` (read from
+`plugin.json`), `at` the current UTC timestamp. **`init` never writes
+`verified`**: it is documenting the codebase for the first time, so every
+concept it produces is legitimately unverified until `challenge` or
+`interview` confirms it later.
 
 `confidence` is the document-level summary of the inline epistemic tags below
 (use the lowest/dominant level present; `mixed` when several coexist).
 
 Reserved files have NO frontmatter, except the **bundle-root** `index.md`, which
-carries ONLY `okf_version: "0.1"`.
+carries ONLY `okf_version: "0.2"`.
 
 ## Epistemic Tags
 
@@ -59,7 +73,7 @@ Every substantive statement MUST be prefixed with one of:
 
 ```
 <bundle>/                    # default docs/okf/
-├── index.md                 # RESERVED — bundle root: frontmatter = ONLY okf_version: "0.1"
+├── index.md                 # RESERVED — bundle root: frontmatter = ONLY okf_version: "0.2"
 ├── log.md                   # RESERVED — functional history, date-grouped, newest first
 ├── OVERVIEW.md              # concept · type: Overview
 ├── ARCHITECTURE.md          # concept · type: Architecture
@@ -140,7 +154,9 @@ starting points. Adapt to the specific project. **Every concept gets frontmatter
 - Business rules (`[To confirm]` unless obvious from code)
 - Edge cases (`[Inference]`)
 - Dependencies on other blocks
-- `# Citations` only if claims come from external sources
+- `sources` frontmatter entry (with `resource`) for each external claim, plus a
+  `[^<id>]` footnote in the body where a claim maps to one source; write no
+  entry when there's no addressable path or URL
 
 **data/<table>.md** (`type: "<DB> Table"`, one per table/collection from Step 2):
 - `resource:` canonical URI (e.g. `postgres://<db>/public/users`)
@@ -156,7 +172,7 @@ starting points. Adapt to the specific project. **Every concept gets frontmatter
   `## <YYYY-MM-DD>` / `* **Creation**: Initial documentation generated from codebase analysis.`
 
 **index.md files** (RESERVED):
-- Bundle root `<bundle>/index.md`: frontmatter `okf_version: "0.1"` only, then
+- Bundle root `<bundle>/index.md`: frontmatter `okf_version: "0.2"` only, then
   sections (Overview / Features / Data / Decisions / History) listing concepts as
   bullets `[link](path.md) — one-line description` (progressive disclosure).
 - `features/index.md`, `decisions/index.md`, `data/index.md`: no frontmatter, one
@@ -242,8 +258,11 @@ the actual path, e.g. `docs/okf`):
 - Group features by **business domain**, not by technical layer
 - Don't document implementation details — document **behavior and intent**
 - Prefer short, dense descriptions over verbose prose
-- Every concept carries frontmatter with a non-empty `type`; reserved files
-  (`index.md`, `log.md`) carry none (root `index.md` → `okf_version` only)
+- Every concept carries frontmatter with a non-empty `type` and a
+  `generated: { by, at }` entry; reserved files (`index.md`, `log.md`) carry
+  none (root `index.md` → `okf_version: "0.2"` only)
+- Never write `verified` — a freshly generated concept is unverified until
+  `challenge` or `interview` confirms it
 - Every section must have at least one epistemic tag; `confidence` in frontmatter
   summarizes them
 - One table/collection = one concept in `data/`; FKs become links

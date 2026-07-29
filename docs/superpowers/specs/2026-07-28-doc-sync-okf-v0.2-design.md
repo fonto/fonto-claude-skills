@@ -1,7 +1,7 @@
 # doc-sync: OKF v0.2 conformance and trust signals
 
 Date: 2026-07-28
-Status: Approved design, pending implementation plan
+Status: Implemented in doc-sync 2.3.0
 Affected: all 8 `doc-sync/skills/*/SKILL.md`, 6 of the 7 `doc-sync/templates/*.md`
 (`log.md` unchanged),
 `doc-sync/scripts/validate_okf.py`, README, plugin/marketplace manifests
@@ -112,6 +112,11 @@ Three rules, and no `verified` entry is ever deleted:
   document was rewritten after it was confirmed. This falls out of `update`
   bumping `generated.at`; it needs no bookkeeping of its own.
 - `today >= stale_after` ⇒ the human confirmation has **expired**.
+- Corollary, added during implementation: `interview` must **not** bump
+  `generated.at` for a plain confirmation or tag raise, or the verification it
+  just recorded would be born void. It bumps `generated.at` only when it
+  actually rewrites the assertion's text, and then writes the `verified` entry
+  with an `at` at or after the new `generated.at`.
 - Both are reported by `challenge` and `coverage`, and warned by the validator.
   Neither is an error: the spec forbids rejecting a bundle over them.
 

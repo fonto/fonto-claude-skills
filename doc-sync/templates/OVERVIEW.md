@@ -2,7 +2,7 @@
 type: Overview
 title: {Project Name}
 description: {One-line summary of what this project is}
-timestamp: {YYYY-MM-DDThh:mm:ssZ}
+generated: { by: doc-sync/{version}, at: {YYYY-MM-DDThh:mm:ssZ} }
 confidence: mixed
 ---
 

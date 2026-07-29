@@ -2,9 +2,12 @@
 type: Decision
 title: {NNN} — {Decision Title}
 description: {One-line summary of the decision}
-timestamp: {YYYY-MM-DDThh:mm:ssZ}
-status: {Proposed | Accepted | Deprecated | Superseded by NNN}
-source: {[Declared] — who provided this | [Inference] — deduced from code}
+generated: { by: doc-sync/{version}, at: {YYYY-MM-DDThh:mm:ssZ} }
+# status: OKF vocabulary only — map from the ADR state in the body:
+# Proposed → draft, Accepted → stable, Deprecated or Superseded by NNN →
+# deprecated. The full ADR wording, including "Superseded by NNN", stays in
+# the body's Status line, not here.
+status: {draft | stable | deprecated}
 confidence: {declared | inference}
 ---
 

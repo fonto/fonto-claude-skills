@@ -3,7 +3,17 @@ type: Feature
 title: {Feature/Block Name}
 description: {One-line summary of this functional block}
 tags: [{tag}]
-timestamp: {YYYY-MM-DDThh:mm:ssZ}
+generated: { by: doc-sync/{version}, at: {YYYY-MM-DDThh:mm:ssZ} }
+# sources: write an entry only for a claim traceable to an addressable artifact
+# (a repo path or a URL) — `resource` is required on every entry. Omit this key
+# entirely when no claim below has an addressable source. A body claim
+# attributes to an entry with a `[^<id>]` footnote, `<id>` matching sources[].id.
+# Never invent a resource for session/ticket context alone.
+sources:
+  - id: {slug}
+    resource: {repo path or URL}
+    title: {source title}
+    last_modified: {YYYY-MM-DD}
 confidence: {code | inference | to-confirm | declared | mixed}
 ---
 
@@ -34,7 +44,7 @@ confidence: {code | inference | to-confirm | declared | mixed}
 [To confirm] {List the business rules that govern this feature.}
 
 1. {Rule 1}
-2. {Rule 2}
+2. {Rule 2} [^{slug}]
 
 ## Edge Cases
 
@@ -53,9 +63,4 @@ confidence: {code | inference | to-confirm | declared | mixed}
 
 - [ ] {Anything marked [To confirm] that needs resolution}
 
-# Citations
-
-{Only include this section when claims in the body come from external sources.
-Use bundle-relative paths, references/ concepts, or absolute URLs.}
-
-1. {Source title} — {url or /references/{name}.md}
+[^{slug}]: {Source title} — {resource}

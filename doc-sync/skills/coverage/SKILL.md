@@ -56,6 +56,17 @@ Parse `<bundle>/decisions/*.md` (`type: Decision`) and count ADRs.
 Also compute **OKF conformance**: % of non-reserved `.md` files with a parseable
 frontmatter carrying a non-empty `type`.
 
+For every concept, read `generated.at`, `verified` and `stale_after` from its
+frontmatter and classify its trust tier:
+- no `verified` key → **unverified**
+- `verified` present, every actor is non-human (`process:...`) → **machine-confirmed**
+- `verified` present with at least one `human:<id>` actor → **human-reviewed**
+
+Then flag freshness issues, without treating either as an error:
+- `generated.at` later than `max(verified[].at)` → **void** (the concept was
+  rewritten after it was last confirmed)
+- `stale_after` present and `today >= stale_after` → **expired**
+
 ### Step 3: Generate COVERAGE.md
 
 Write or overwrite `<bundle>/COVERAGE.md` (it is itself a concept — keep its
@@ -65,7 +76,7 @@ frontmatter `type: Coverage Report`):
 ---
 type: Coverage Report
 title: Documentation Coverage
-timestamp: YYYY-MM-DDThh:mm:ssZ
+generated: { by: doc-sync/<plugin version>, at: <ISO 8601 UTC> }
 confidence: code
 ---
 
@@ -86,6 +97,8 @@ Last updated: YYYY-MM-DD
   - [Declared]: N (X%)
   - [Decision]: N (X%)
 - Architecture Decision Records: N
+- Trust tiers: N unverified (X%), N machine-confirmed (X%), N human-reviewed (X%)
+- Freshness: N void (rewritten after verification), N expired (past `stale_after`)
 
 ## Coverage by Functional Block
 
@@ -107,6 +120,20 @@ Last updated: YYYY-MM-DD
 
 Overall documentation confidence: X%
 (Weighted: [Code]=100%, [Declared]=90%, [Decision]=90%, [Inference]=50%, [To confirm]=10%)
+
+## Trust & Freshness
+
+| Tier | Count | % |
+|------|------:|--:|
+| Unverified — no `verified` entry | N | X% |
+| Machine-confirmed — `verified` has only non-human actors | N | X% |
+| Human-reviewed — `verified` has at least one `human:` actor | N | X% |
+
+- Void (`generated.at` later than the last `verified[].at`): N concepts — list them, or "none"
+- Expired (`today >= stale_after`): N concepts — list them, or "none"
+
+Void and expired are signals to act on, not errors: re-run `challenge` to
+re-confirm a void concept, or `interview` to refresh an expired one.
 
 ## Action Items
 
@@ -130,6 +157,7 @@ Stage and commit: `docs: coverage report updated`
 
 - **Group by business domain** — not by technical layer
 - **Compute a confidence score** — weighted by tag reliability, gives a single number to track over time
+- **Report the trust-tier distribution and freshness** — unverified / machine-confirmed / human-reviewed counts, plus void and expired concepts; `confidence` is not replaced by this, the two axes are orthogonal
 - **Prioritize action items** — undocumented high-traffic blocks first, suspect inferences in edge cases last
 - **Track trends** — if previous COVERAGE.md exists, note improvements or regressions
 - **Be honest** — a project with 100% coverage but 80% `[Inference]` is not well-documented

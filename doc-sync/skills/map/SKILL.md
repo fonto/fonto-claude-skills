@@ -37,7 +37,7 @@ is delimited and replaced, never duplicated.
 
 ### Step 2: Regenerate OKF index.md files
 
-- **Bundle root `<bundle>/index.md`** — frontmatter `okf_version: "0.1"` ONLY, then
+- **Bundle root `<bundle>/index.md`** — frontmatter `okf_version: "0.2"` ONLY, then
   sections (Overview / Features / Data / Decisions / History) listing concepts as
   bullets: `[link](relative/path.md) — description`.
 - **`features/index.md`, `decisions/index.md`, `data/index.md`** — NO frontmatter, a
