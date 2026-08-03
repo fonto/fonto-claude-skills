@@ -56,7 +56,7 @@ description: "Use after any code change with functional impact to sync documenta
   is editing it now. Never write `process:doc-sync-update`, `human:...`, or any
   other actor there — an actor prefix in `generated.by` is always a bug. If a
   concept somehow has no `generated` key at all, create it with
-  `by: doc-sync/2.3.0` verbatim
+  `by: doc-sync/2.3.1` verbatim
 - **Never invent `status`.** Leave it exactly as found, and do not add it because a
   concept still holds `[To confirm]` items — unresolved questions are what the
   epistemic tags are for. `stable` is the default and is expressed by omitting the key

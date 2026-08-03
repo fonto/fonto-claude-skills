@@ -76,7 +76,7 @@ frontmatter `type: Coverage Report`):
 ---
 type: Coverage Report
 title: Documentation Coverage
-generated: { by: doc-sync/2.3.0, at: <ISO 8601 UTC> }
+generated: { by: doc-sync/2.3.1, at: <ISO 8601 UTC> }
 confidence: code
 ---
 

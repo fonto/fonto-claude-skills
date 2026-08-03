@@ -107,7 +107,7 @@ mapped from the ADR state (Proposed→draft, Accepted→stable, Deprecated/Super
 ---
 type: Decision
 title: NNN — <Title>
-generated: { by: doc-sync/2.3.0, at: YYYY-MM-DDThh:mm:ssZ }
+generated: { by: doc-sync/2.3.1, at: YYYY-MM-DDThh:mm:ssZ }
 verified:
   - { by: human:<id>, at: YYYY-MM-DDThh:mm:ssZ }
 stale_after: YYYY-MM-DD

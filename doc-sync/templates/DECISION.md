@@ -2,7 +2,7 @@
 type: Decision
 title: {NNN} — {Decision Title}
 description: {One-line summary of the decision}
-generated: { by: doc-sync/2.3.0, at: {YYYY-MM-DDThh:mm:ssZ} }
+generated: { by: doc-sync/2.3.1, at: {YYYY-MM-DDThh:mm:ssZ} }
 # status: OKF vocabulary only — map from the ADR state in the body:
 # Proposed → draft, Accepted → stable, Deprecated or Superseded by NNN →
 # deprecated. The full ADR wording, including "Superseded by NNN", stays in

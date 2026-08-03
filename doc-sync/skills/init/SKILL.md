@@ -31,7 +31,7 @@ title: <display name>
 description: <one-line summary>
 resource: <repo path or URL>  # optional
 tags: [<tag>, ...]
-generated: { by: doc-sync/2.3.0, at: <ISO 8601 UTC> }
+generated: { by: doc-sync/2.3.1, at: <ISO 8601 UTC> }
 sources:                      # optional; omit entirely when there's no addressable source
   - id: <slug>
     resource: <repo path or URL>       # REQUIRED within an entry
@@ -42,7 +42,7 @@ confidence: <code | inference | to-confirm | declared | mixed>
 ---
 ```
 
-`generated` is always written — `by: doc-sync/2.3.0` **verbatim, exactly as
+`generated` is always written — `by: doc-sync/2.3.1` **verbatim, exactly as
 written here**, `at` the current UTC timestamp. Do not try to read the version
 from `plugin.json`: the plugin lives outside the documented project and that
 read will fail. The literal is bumped with the plugin release.

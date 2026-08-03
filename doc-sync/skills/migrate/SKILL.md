@@ -82,7 +82,7 @@ For each non-reserved `.md` (everything except `index.md`/`log.md`):
   - `type` — from the table above
   - `title` — the H1, or a humanized filename
   - `description` — first sentence of the "Purpose" section, or the H1
-  - `generated: { by: doc-sync/2.3.0, at: <date> }` — `by` is that literal
+  - `generated: { by: doc-sync/2.3.1, at: <date> }` — `by` is that literal
     verbatim, never read from `plugin.json` (the plugin lives outside the
     documented project, so that read fails); `at` is an existing
     `Last updated:` line, else the file's last git commit date, else today
@@ -116,7 +116,7 @@ For each non-reserved `.md` (everything except `index.md`/`log.md`):
 #### Step 4: Lift decisions into frontmatter
 
 For each `<bundle>/decisions/*.md`:
-- Frontmatter: `type: Decision`, `generated: { by: doc-sync/2.3.0, at:
+- Frontmatter: `type: Decision`, `generated: { by: doc-sync/2.3.1, at:
   <the file's **Date:** line> }`, `status` mapped onto the OKF vocabulary
   (`Proposed→draft`, `Accepted→stable`, `Deprecated`/`Superseded→deprecated`),
   `confidence` per the mapping above. Do not write a `source:` key.
@@ -190,7 +190,7 @@ and `log.md`):
   X }`. Preserve `X` verbatim — only the key shape changes, not the date.
 - `by` is the bare producer name `doc-sync`, with **no version number**. The
   doc-sync version that actually produced this file was never recorded and is
-  now unknowable; writing the current plugin version (`doc-sync/2.3.0`) here
+  now unknowable; writing the current plugin version (`doc-sync/2.3.1`) here
   would misattribute this file's provenance to a version that never generated
   it. Leave a short comment above the key stating this, so a later pass does not
   "helpfully" fill in a version number:
