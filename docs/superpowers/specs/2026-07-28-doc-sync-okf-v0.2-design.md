@@ -230,6 +230,40 @@ non-reserved file:
   machine-confirmed → human-reviewed, and that a subsequent `update` voids the
   human verification.
 
+## Found during verification
+
+Three defects surfaced only in real sessions, never in the validator's own unit
+checks. All three share a shape: the prompt left a gap, and the model executing
+it filled the gap plausibly and wrongly. What held afterwards was an explicitly
+stated invariant *plus* a mechanical guard — wording alone had already failed
+once. Do not remove the rules below as redundant; they exist because the
+obvious behavior is the wrong one.
+
+**1. `generated.by` overwritten with the acting process.** `update` and
+`challenge` stamped `by: process:doc-sync-update` / `process:doc-sync-challenge`.
+On one concept `challenge` rewrote `generated` *and wrote no `verified`*, so the
+document lost its confirmation and claimed to be produced by its own checker.
+`by` names the producer and is invariant; actors belong in `verified`. Now
+stated in four skills and enforced by a validator warning on any actor prefix in
+`generated.by`.
+
+**2. `generated.by: doc-sync/unknown`.** The skills said "read the version from
+`plugin.json`". The plugin is installed outside the project being documented, so
+that path never resolves. The version literal is hardcoded instead — see the
+README *Releasing* section for the three places that must agree.
+
+**3. `status: draft` invented on fresh concepts.** `init`'s contract listed
+`status: <draft | stable | deprecated>` and the model wrote the first enum value
+every time; a later pass also inferred `draft` from the presence of
+`[To confirm]` items. `status` is out of the contract entirely now — only
+`DECISION.md` carries it, mapped from the ADR state. Unresolved questions are
+what the epistemic tags express; `status` tracks the lifecycle of the documented
+thing, not confidence in the prose.
+
+A fourth, smaller one: `update` used a `[^dec002]` footnote to point at a
+Decision concept, producing a dangling reference. A footnote may only key a
+`sources[].id`; a cross-concept reference is a plain markdown link.
+
 ## Out of scope (YAGNI)
 
 - `type: Attested Computation` and its `runtime` / `parameters` / `executor` /
