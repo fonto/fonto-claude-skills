@@ -153,7 +153,7 @@ Output a structured report:
 | File | Sub-feature / step | Class | Finding |
 |------|--------------------|-------|---------|
 | features/auth.md | `auth-login` / Open login | doc error | `/auth/signin` matches no route; page is `/auth/login` |
-| features/offers.md | `offer-accept` | verified-unreachable | no seller account in VERIFICATION.md accounts; tried `/ad-offer-listing/sales/viager` |
+| features/orders.md | `order-refund` | verified-unreachable | no admin account in VERIFICATION.md accounts; tried `/admin/orders/[id]` |
 
 ## Trust Tiers
 | Tier | Count |

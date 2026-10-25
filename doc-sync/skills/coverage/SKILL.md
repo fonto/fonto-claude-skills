@@ -176,8 +176,8 @@ Only when the bundle has a `VERIFICATION.md`; omit the section otherwise.
 
 | Feature | Apps | Roles | e2e | Level | Last proof | Gaps |
 |---------|------|-------|----:|-------|-----------|------|
-| [authentication](features/authentication.md) | web-client, tax-web, api | guest, personal | 6 | drivable | — | — |
-| [offers](features/offers.md) | web-client, api | personal, admin | 0 | partly-drivable | — | 2 [To confirm] in How to get / Driving |
+| [auth](features/auth.md) | web, api | guest, member | 4 | drivable | — | — |
+| [orders](features/orders.md) | web, api | member, admin | 0 | partly-drivable | — | 2 [To confirm] in How to get / Driving |
 
 ### Unmapped routes
 
@@ -185,7 +185,7 @@ Routes no feature's `surfaces` covers, grouped into proposed features:
 
 | App | Route | Proposed feature |
 |-----|-------|------------------|
-| web-client | /partenaires/[code] | affiliation (new) |
+| web | /referrals/[code] | referrals (new) |
 
 ## Action Items
 

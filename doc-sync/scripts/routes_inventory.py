@@ -219,21 +219,21 @@ def self_test():
     import tempfile
     with tempfile.TemporaryDirectory() as d:
         repo = pathlib.Path(d)
-        for p in ["web/app/(main)/page.tsx", "web/app/(main)/viager/[id]/page.tsx",
+        for p in ["web/app/(main)/page.tsx", "web/app/(main)/items/[id]/page.tsx",
                   "web/app/@modal/(.)photo/page.tsx", "web/app/_lib/page.tsx", "web/app/api/x/route.ts"]:
             (repo / p).parent.mkdir(parents=True, exist_ok=True)
             (repo / p).write_text("")
-        assert sorted(r for r, _ in next_app(repo / "web/app")) == ["/", "/viager/[id]"]
+        assert sorted(r for r, _ in next_app(repo / "web/app")) == ["/", "/items/[id]"]
         (repo / "gen.ts").write_text("export interface FileRoutesByTo {\n  '/': typeof A\n"
                                      "  '/dossiers/$dossierId': typeof B\n  '/files/$': typeof C\n}\n")
         assert [r for r, _ in tanstack(repo / "gen.ts")] == ["/", "/dossiers/[dossierId]", "/files/[...splat]"]
         (repo / "api").mkdir()
         (repo / "api/a.controller.ts").write_text(
             "@Controller('auth')\nclass A {\n @Post('/login') a(){}\n @Get() b(){}\n}\n"
-            "@Controller({ path: 'offer', version: '1' })\nclass B {\n @Delete(':id') c(){}\n}\n")
-        assert sorted(r for r, _ in nestjs(repo / "api")) == ["/auth", "/auth/login", "/offer/[id]"]
+            "@Controller({ path: 'order', version: '1' })\nclass B {\n @Delete(':id') c(){}\n}\n")
+        assert sorted(r for r, _ in nestjs(repo / "api")) == ["/auth", "/auth/login", "/order/[id]"]
         assert matches("/auth/login", "/auth/*") and matches("/auth", "/auth/*")
-        assert not matches("/authx", "/auth/*") and not matches("/viager", "/viager/[id]")
+        assert not matches("/authx", "/auth/*") and not matches("/items", "/items/[id]")
         assert stale_since(repo, "--output=/tmp/x", ["a"])  # rejected before git runs
     print("self-test ok")
     return 0

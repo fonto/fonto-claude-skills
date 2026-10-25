@@ -151,7 +151,7 @@ directory; use bundle-relative paths (leading `/`) for cross-directory links
   that prints one path per line. Note the e2e runner and its spec directory, the
   test accounts the specs use (email + the **name** of the env var holding the
   password — never open a `.env*` file to find it), and the role vocabulary the code
-  uses (an enum like `AccountType` is the default source).
+  uses (a user-type or role enum in the code is the default source).
 - Write `<bundle>/VERIFICATION.md` from `templates/VERIFICATION.md` with what you
   found (declarative only — do not run any app or CLI), then run
   `python3 <plugin>/scripts/routes_inventory.py <bundle> --repo .` and use its output
