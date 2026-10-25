@@ -32,6 +32,7 @@ import re
 import subprocess
 import sys
 
+sys.dont_write_bytecode = True  # keep __pycache__ out of the plugin dir
 from validate_okf import (frontmatter, FM, flow_list, str_list, load_harness,
                           feature_level, drive_level)
 

@@ -357,7 +357,7 @@ python3 /path/to/doc-sync/scripts/validate_okf.py /tmp/okf-test/docs/okf
 #    pass the project root as 2nd arg to also check that tests[] paths exist
 
 # 4. the scripts' own tests (stdlib unittest)
-python3 -m unittest discover -s doc-sync/scripts -p 'test_*.py'
+python3 -B -m unittest discover -s doc-sync/scripts -p 'test_*.py'
 ```
 
 ## Changelog

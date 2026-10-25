@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the doc-sync 2.4 verification extension (validator + routes inventory).
 
-Run: python3 -m unittest discover -s doc-sync/scripts -p 'test_*.py'
+Run: python3 -B -m unittest discover -s doc-sync/scripts -p 'test_*.py'
 """
 import datetime
 import pathlib
@@ -11,6 +11,7 @@ import tempfile
 import textwrap
 import unittest
 
+sys.dont_write_bytecode = True
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import routes_inventory  # noqa: E402
