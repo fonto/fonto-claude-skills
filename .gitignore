@@ -1,1 +1,6 @@
 .claude/settings.local.json
+.mcp.json
+.vibe/
+.kiro/settings/
+.gemini/
+.ai/mcp/
