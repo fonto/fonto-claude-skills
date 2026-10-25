@@ -18,7 +18,15 @@ Warnings (exit 0): missing/blank `okf_version` on the bundle-root index.md (it
   later `generated.at`, `okf_version` present but not "0.2", footnote/source
   cross-reference mismatches. Plus a trust-tier breakdown summary line.
 
-Usage: validate_okf.py [BUNDLE_DIR]   (default: docs/okf)
+Verification extension (doc-sync 2.4, warnings only, silent on bundles that use
+none of it): `surfaces` without a VERIFICATION.md or naming an app it does not
+declare, `tests[]` paths missing under REPO_ROOT (checked only when given), a
+`verified` entry by the proof actor without `sha`, a VERIFICATION.md with a
+wrong `type`, an unknown route adapter, a safety rule wider than local/worktree,
+or an account carrying a secret value instead of an env var name. Plus a
+documented / partly-drivable / drivable / proven summary line.
+
+Usage: validate_okf.py [BUNDLE_DIR] [REPO_ROOT]   (default: docs/okf)
 """
 import sys, re, pathlib, datetime
 
@@ -60,7 +68,9 @@ def parse_flow_map(s):
     inner = m.group(1)
     d = {}
     for em in FLOW_ENTRY.finditer(inner):
-        d[em.group(1)] = em.group(2).strip().strip("\"'")
+        v = em.group(2).strip()
+        # strip one matched quote pair only, so `"cmd 'arg'"` keeps its inner quotes
+        d[em.group(1)] = v[1:-1] if len(v) > 1 and v[0] == v[-1] and v[0] in "\"'" else v
     return d if d else None
 
 
@@ -147,14 +157,191 @@ def parse_source_ids(fm):
     return ids
 
 
+# --- verification extension (doc-sync 2.4) ---------------------------------
+
+ADAPTERS = ("next-app", "tanstack", "nestjs", "cmd")
+SAFE_TARGETS = {"local", "worktree"}
+# Subsections of `## Verification` that must be free of [To confirm] for a
+# feature to count as drivable; Sub-features and Gotchas may keep open items.
+DRIVE_PARTS = ("how to get", "driving", "proof")
+
+
+def key_line(lines, key):
+    return next((i for i, l in enumerate(lines) if re.match(rf"{key}:", l)), None)
+
+
+def flow_list(fm, key):
+    """Block list of `- { k: v }` flow maps under top-level `key:`; [] if absent."""
+    lines = fm.splitlines()
+    idx = key_line(lines, key)
+    out = []
+    if idx is None:
+        return out
+    for line in lines[idx + 1:]:
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        item = re.match(r"^\s+-\s*(\{.*\})", line)  # greedy: drops a trailing `# comment`
+        if not item:
+            break
+        d = parse_flow_map(item.group(1))
+        if d:
+            out.append(d)
+    return out
+
+
+def str_list(fm, key):
+    """`key: [a, b]` or a block of `- a` items -> list of str; None if absent."""
+    lines = fm.splitlines()
+    idx = key_line(lines, key)
+    if idx is None:
+        return None
+    v = re.sub(r"\s+#.*$", "", lines[idx].split(":", 1)[1]).strip()
+    if v.startswith("["):
+        return [x.strip().strip("\"'") for x in v.strip("[]").split(",") if x.strip()]
+    if v:
+        return [v.strip("\"'")]
+    out = []
+    for line in lines[idx + 1:]:
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        item = re.match(r"^\s+-\s*([^{#\s][^#]*?)\s*(#.*)?$", line)
+        if not item:
+            break
+        out.append(item.group(1).strip("\"'"))
+    return out
+
+
+def load_harness(root):
+    """Parse `<bundle>/VERIFICATION.md`, or None when the bundle has none."""
+    f = root / "VERIFICATION.md"
+    if not f.is_file():
+        return None
+    fm = frontmatter(f.read_text()) or ""
+    m = re.search(r"^proof:[ \t]*(\{.*\})", fm, re.M)
+    proof = parse_flow_map(m.group(1)) if m else None
+    proof = proof or {}
+    try:
+        days = int(proof.get("freshness_days", 30))
+    except ValueError:
+        days = 30
+    return {"fm": fm, "apps": flow_list(fm, "apps"), "accounts": flow_list(fm, "accounts"),
+            "actor": proof.get("actor"), "freshness_days": days}
+
+
+def verification_section(body):
+    """Text of the `## Verification` section, or None if the concept has none."""
+    m = re.search(r"^## Verification[ \t]*\n(.*?)(?=^## |^\[\^|\Z)", body, re.M | re.S)
+    return m.group(1) if m else None
+
+
+def subsections(sec):
+    parts = re.split(r"^### +(.+)$", sec, flags=re.M)
+    return {parts[i].strip().lower(): parts[i + 1] for i in range(1, len(parts) - 1, 2)}
+
+
+def proof_entries(verified, harness):
+    """`verified` entries that record a live proof: carry `sha`, by the declared actor."""
+    actor = harness and harness.get("actor")
+    return [e for e in verified if e.get("sha") and (not actor or e.get("by") == actor)]
+
+
+def fresh_proof(fm, harness, now=None):
+    """Latest proof entry newer than generated.at and within freshness_days, or None."""
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    verified, _ = parse_verified(fm)
+    generated, _ = parse_generated(fm)
+    gen_at = instant((generated or {}).get("at"))
+    days = (harness or {}).get("freshness_days", 30)
+    fresh = []
+    for e in proof_entries(verified, harness):
+        at = instant(e.get("at"))
+        if not at or at.tzinfo is None:
+            continue
+        if gen_at and gen_at.tzinfo and at < gen_at:
+            continue  # rewritten since the proof: void
+        if (now - at).days < days:
+            fresh.append((at, e))
+    return max(fresh, key=lambda t: t[0])[1] if fresh else None
+
+
+def drive_level(fm, body):
+    """drivable: surfaces + a Verification section with driving steps and no
+    [To confirm] in How to get / Driving / Proof; partly-drivable: surfaces and
+    a Verification section, but gaps; documented: anything else."""
+    sec = verification_section(body)
+    if not flow_list(fm, "surfaces") or sec is None:
+        return "documented"
+    subs = subsections(sec)
+    driving = next((t for h, t in subs.items() if h.startswith("driving")), "")
+    gaps = any("[To confirm" in t for h, t in subs.items() if h.startswith(DRIVE_PARTS))
+    if gaps or not re.search(r"^\s*-\s+\S", driving, re.M):
+        return "partly-drivable"
+    return "drivable"
+
+
+def feature_level(fm, body, harness, now=None):
+    """(level, proof entry or None); proven = a fresh proof, else drive_level."""
+    proof = fresh_proof(fm, harness, now)
+    return ("proven", proof) if proof else (drive_level(fm, body), None)
+
+
+def harness_warnings(rel, fm, harness):
+    w = []
+    if not re.search(r"^type:[ \t]*[\"']?Verification Harness[\"']?[ \t]*$", fm, re.M):
+        w.append(f"{rel}: type should be `Verification Harness`")
+    for a in harness["apps"]:
+        if "name" not in a:
+            w.append(f"{rel}: an apps[] entry has no name")
+        if a.get("routes") not in ADAPTERS:
+            w.append(f"{rel}: app {a.get('name')!r} routes adapter {a.get('routes')!r} "
+                     f"not one of {', '.join(ADAPTERS)}")
+    m = re.search(r"allowed_targets:\s*\[([^\]]*)\]", fm)
+    targets = {t.strip().strip("\"'") for t in m.group(1).split(",") if t.strip()} if m else set()
+    if not targets:
+        w.append(f"{rel}: no safety.allowed_targets — a live replay must be limited to local/worktree")
+    elif not targets <= SAFE_TARGETS:
+        w.append(f"{rel}: safety.allowed_targets {sorted(targets)} goes beyond local/worktree")
+    for acc in harness["accounts"]:
+        bad = [k for k in acc if re.search(r"pass|secret|token|key", k, re.I) and k != "secret_env"]
+        if bad:
+            w.append(f"{rel}: account {acc.get('role')!r} carries {bad} — store only the env var name in secret_env")
+    return w
+
+
+def concept_verification_warnings(rel, fm, harness, repo):
+    w = []
+    surfaces = flow_list(fm, "surfaces")
+    if surfaces and harness is None:
+        w.append(f"{rel}: surfaces declared but the bundle has no VERIFICATION.md")
+    elif surfaces:
+        known = {a.get("name") for a in harness["apps"]}
+        for s in surfaces:
+            if s.get("app") not in known:
+                w.append(f"{rel}: surfaces app {s.get('app')!r} is not declared in VERIFICATION.md")
+    if repo:
+        for t in str_list(fm, "tests") or []:
+            if not (repo / t).exists():
+                w.append(f"{rel}: tests[] {t!r} does not exist under {repo}")
+    actor = harness and harness.get("actor")
+    verified, _ = parse_verified(fm)
+    for e in verified:
+        if actor and e.get("by") == actor and not e.get("sha"):
+            w.append(f"{rel}: proof entry by {actor} has no sha")
+    return w
+
+
 def main():
     root = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "docs/okf")
+    repo = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None
     if not root.is_dir():
         print(f"bundle not found: {root}")
         return 1
     errors, warnings = [], []
     root_res = root.resolve()
     today = datetime.date.today().isoformat()
+    harness = load_harness(root)
+    levels = {"documented": 0, "partly-drivable": 0, "drivable": 0, "proven": 0}
+    uses_verification = harness is not None
 
     tiers = {"unverified": 0, "machine-confirmed": 0, "human-reviewed": 0}
 
@@ -237,6 +424,14 @@ def main():
                 elif stale_after < today:
                     warnings.append(f"{rel}: stale_after {stale_after!r} has expired")
 
+            # verification extension
+            if rel == pathlib.Path("VERIFICATION.md"):
+                warnings.extend(harness_warnings(rel, fm, harness))
+            warnings.extend(concept_verification_warnings(rel, fm, harness, repo))
+            if re.search(r"^type:[ \t]*[\"']?Feature[\"']?[ \t]*$", fm, re.M):
+                levels[feature_level(fm, body, harness)[0]] += 1
+                uses_verification = uses_verification or bool(flow_list(fm, "surfaces"))
+
             # residual `# Citations` heading in the body
             if re.search(r"^#+\s*Citations\s*$", body, re.M):
                 warnings.append(f"{rel}: residual `# Citations` heading (use sources frontmatter)")
@@ -278,6 +473,8 @@ def main():
     print(f"\ntrust tiers — unverified: {tiers['unverified']}, "
           f"machine-confirmed: {tiers['machine-confirmed']}, "
           f"human-reviewed: {tiers['human-reviewed']}")
+    if uses_verification:
+        print("verification — " + ", ".join(f"{k}: {v}" for k, v in levels.items()))
     print(f"{n} files checked — {len(errors)} errors, {len(warnings)} warnings")
     return 1 if errors else 0
 
