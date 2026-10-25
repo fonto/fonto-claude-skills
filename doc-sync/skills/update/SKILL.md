@@ -56,10 +56,27 @@ description: "Use after any code change with functional impact to sync documenta
   is editing it now. Never write `process:doc-sync-update`, `human:...`, or any
   other actor there — an actor prefix in `generated.by` is always a bug. If a
   concept somehow has no `generated` key at all, create it with
-  `by: doc-sync/2.3.1` verbatim
+  `by: doc-sync/2.4.0` verbatim
 - **Never invent `status`.** Leave it exactly as found, and do not add it because a
   concept still holds `[To confirm]` items — unresolved questions are what the
   epistemic tags are for. `stable` is the default and is expressed by omitting the key
+
+**Verification — gated on declared surfaces** (only when `<bundle>/VERIFICATION.md`
+exists; this runs on every PR, so the default is to do nothing):
+- Run `python3 <plugin>/scripts/routes_inventory.py <bundle> --repo .` and keep the
+  source files behind each route. A feature's `## Verification` is in scope **only
+  if** a changed file is a source of one of its `surfaces`, or the diff removes or
+  renames a selector, label or test file its `## Verification` / `tests` cites.
+  Otherwise leave the section and the three keys untouched — no rewrite, no bump.
+- In scope: rewrite only the affected steps (route, selector, label, precondition),
+  keep the tags honest (`[Code]` for a handle read in code or a spec, `[Inference]`
+  otherwise), add a new route to `surfaces`, a new e2e spec that drives the feature
+  to `tests`, a removed one out of `tests`. Bump `generated.at` as for any rewrite:
+  that voids an existing live proof on purpose — the proven journey has changed.
+- A new route the diff adds that no feature's `surfaces` covers: add it to the
+  feature it belongs to, or report it as unmapped.
+- **Never write `verified`**, and never a proof entry `{ by, at, sha }`. Agents in a
+  worktree or PR attach evidence to the PR; only a replay on `main` records a proof.
 
 **If the schema/data layer changed** (migration added, model field changed):
 - Update the affected `<bundle>/data/<table>.md` concept's `# Schema` (columns,
@@ -194,5 +211,7 @@ Apply the same triage as `doc-sync:ingest-existing-docs` Steps 2–5 and 7
   `|`, code fences, and any `<!-- doc-sync:* -->` sequences.
 - **Only human-stated intent becomes `[Declared]`** — the assistant's own deductions
   about intent stay `[Inference]` or `[To confirm]`.
+- **`## Verification` is gated on declared surfaces** — rewrite it only when the diff
+  touches a surface's source files or a handle it cites (Step 2)
 - **Non-code context pass is gated on functional change** — Step 2.5 does not run for
   technical-only changes.

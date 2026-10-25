@@ -2,7 +2,7 @@
 type: Architecture
 title: Architecture — {Project Name}
 description: Component map, data flows, external dependencies, configuration
-generated: { by: doc-sync/2.3.1, at: {YYYY-MM-DDThh:mm:ssZ} }
+generated: { by: doc-sync/2.4.0, at: {YYYY-MM-DDThh:mm:ssZ} }
 confidence: mixed
 ---
 

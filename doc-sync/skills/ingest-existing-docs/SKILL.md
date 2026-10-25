@@ -102,7 +102,7 @@ For every candidate, check the current code where feasible and assign a tag:
   - refresh frontmatter `generated.at` to now (ISO 8601 UTC), leaving `generated.by`
     byte-for-byte as found (it names the producer and is invariant; never write an
     actor such as `process:...` there). On a concept you create, `by` is
-    `doc-sync/2.3.1` verbatim. Never write `verified` — a claim read from an old
+    `doc-sync/2.4.0` verbatim. Never write `verified` — a claim read from an old
     document and checked against code is not a human confirmation of the concept.
     Never invent `status`;
   - recompute `confidence` from the inline tags now present (same mapping as

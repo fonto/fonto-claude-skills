@@ -135,6 +135,8 @@ def stale_since(repo, sha, files):
     """True when a commit after `sha` touched one of `files` (or sha is unknown)."""
     if not files:
         return False
+    if not re.fullmatch(r"[0-9a-fA-F]{7,40}", sha or ""):
+        return True  # bundle content is untrusted: never hand git an option-like sha
     r = subprocess.run(["git", "-C", str(repo), "log", "-1", "--format=%H", f"{sha}..HEAD", "--", *files],
                        capture_output=True, text=True)
     return r.returncode != 0 or bool(r.stdout.strip())
@@ -231,6 +233,7 @@ def self_test():
         assert sorted(r for r, _ in nestjs(repo / "api")) == ["/auth", "/auth/login", "/offer/[id]"]
         assert matches("/auth/login", "/auth/*") and matches("/auth", "/auth/*")
         assert not matches("/authx", "/auth/*") and not matches("/viager", "/viager/[id]")
+        assert stale_since(repo, "--output=/tmp/x", ["a"])  # rejected before git runs
     print("self-test ok")
     return 0
 

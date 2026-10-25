@@ -33,6 +33,16 @@ description: "Use to capture tacit knowledge from developers or business stakeho
   1. Business rules tagged `[To confirm]` — highest risk of being wrong
   2. Architecture decisions tagged `[Inference]` — important for future work
   3. Edge cases tagged `[Inference]` — lower priority but useful
+- In a `## Verification` section, also collect what the code cannot tell — these are
+  what keep a feature at `partly-drivable`:
+  - preconditions: seed data, feature flags, the test account per role (an email and
+    the **name** of the env var holding its password — if the interviewee starts to
+    type a password, stop them: only the variable name goes in the bundle);
+  - the observable end state that proves the feature worked, seen from a second view,
+    and its side effects (row, email, message);
+  - entry points the map is missing, and missing `surfaces` / `roles` / `tests`.
+  Ask these one at a time like any other item. Confirmed answers land in the section
+  (or in `VERIFICATION.md` for accounts and roles) tagged `[Declared]`.
 
 ### Step 2: Present Summary
 
@@ -107,7 +117,7 @@ mapped from the ADR state (Proposed→draft, Accepted→stable, Deprecated/Super
 ---
 type: Decision
 title: NNN — <Title>
-generated: { by: doc-sync/2.3.1, at: YYYY-MM-DDThh:mm:ssZ }
+generated: { by: doc-sync/2.4.0, at: YYYY-MM-DDThh:mm:ssZ }
 verified:
   - { by: human:<id>, at: YYYY-MM-DDThh:mm:ssZ }
 stale_after: YYYY-MM-DD
@@ -141,7 +151,9 @@ After the session:
 - **Accept "I don't know"** — keep the tag as `[To confirm]`, don't pressure
 - **Don't lead the witness** — present the assertion neutrally, don't suggest the answer
 - **Record who confirmed it** — every `[Declared]` upgrade appends a `verified: human:<id>`
-  entry; that is the durable record of who provided the information, not prose
+  entry; that is the durable record of who provided the information, not prose. That
+  entry never carries `sha`: a human confirming the map is not a live proof
+- **No secrets** — accounts are recorded as env var names, never values
 - **Never bump `generated.at` on a plain confirmation** — see Step 4; only an actual content
   rewrite (the **Corrected** case) bumps it
 - **Create ADRs proactively** — any answer that reveals a deliberate choice deserves a decision record

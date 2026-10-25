@@ -108,7 +108,7 @@ class ValidatorTests(unittest.TestCase):
     def test_warnings(self):
         with tempfile.TemporaryDirectory() as d:
             surf = SURF + "  - { app: mobile, route: /x }\n"
-            b = Bundle(d, a=feature(surf, tests="tests: [e2e/a.spec.ts, e2e/gone.spec.ts]\n",
+            b = Bundle(d, a=feature(surf, tests="roles: [buyer, pirate]\ntests: [e2e/a.spec.ts, e2e/gone.spec.ts]\n",
                                     verified=f"verified:\n  - {{ by: process:test-verify, at: {RECENT} }}\n"))
             (pathlib.Path(d) / "e2e").mkdir()
             (pathlib.Path(d) / "e2e/a.spec.ts").write_text("")
@@ -122,6 +122,8 @@ class ValidatorTests(unittest.TestCase):
             self.assertIn("'e2e/gone.spec.ts' does not exist", out)
             self.assertNotIn("a.spec.ts' does not exist", out)
             self.assertIn("proof entry by process:test-verify has no sha", out)
+            self.assertIn("role 'pirate' is not declared", out)
+            self.assertNotIn("role 'buyer'", out)
             self.assertIn("goes beyond local/worktree", out)
             self.assertIn("carries ['password']", out)
             self.assertIn("'rails' not one of", out)

@@ -225,6 +225,7 @@ def load_harness(root):
     except ValueError:
         days = 30
     return {"fm": fm, "apps": flow_list(fm, "apps"), "accounts": flow_list(fm, "accounts"),
+            "roles": str_list(fm, "roles"),
             "actor": proof.get("actor"), "freshness_days": days}
 
 
@@ -318,6 +319,10 @@ def concept_verification_warnings(rel, fm, harness, repo):
         for s in surfaces:
             if s.get("app") not in known:
                 w.append(f"{rel}: surfaces app {s.get('app')!r} is not declared in VERIFICATION.md")
+    if harness and harness["roles"] is not None and rel != pathlib.Path("VERIFICATION.md"):
+        for r in str_list(fm, "roles") or []:
+            if r not in harness["roles"]:
+                w.append(f"{rel}: role {r!r} is not declared in VERIFICATION.md roles")
     if repo:
         for t in str_list(fm, "tests") or []:
             if not (repo / t).exists():
