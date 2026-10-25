@@ -13,7 +13,12 @@ Adapters (`routes:` key of an app):
             (fallback `FileRoutesByFullPath`), `$param` -> `[param]`.
   nestjs    `root` = the source dir: `@Controller('x')` + `@Get('y')`... ->
             `/x/y`, `:param` -> `[param]`.
-  cmd       `routes_cmd` = a shell command run in REPO that prints one route
+  symfony   `root` = the controllers dir (usually `src/Controller`): every
+            `#[Route('/y')]` attribute or `@Route("/y")` annotation on a method,
+            prefixed by the one on its class, `{param}` -> `[param]`. Static: the
+            kernel is never booted. Routes declared only in `config/routes/*.yaml`
+            are missed — use `cmd` with `bin/console debug:router` for those.
+  cmd      `routes_cmd` = a shell command run in REPO that prints one route
             per line. It is project-declared code, so it only runs with
             --allow-cmd; otherwise the app is reported as not inventoried.
 
@@ -87,12 +92,42 @@ def nestjs(root):
                 yield re.sub(r":(\w+)", r"[\1]", join(prefix, val)), f
 
 
+SF_ROUTE = re.compile(r"(?:#\[Route|@Route)\(\s*(?:path\s*[:=]\s*)?(['\"])(.*?)\1")
+SF_DECL = re.compile(r"\b(class|function)\s+\w+")
+
+
+def symfony(root):
+    for f in sorted(root.rglob("*.php")):
+        text = f.read_text(errors="replace")
+        if "Route" not in text:
+            continue
+        class_prefix, methods = {}, []
+        for m in SF_ROUTE.finditer(text):
+            decl = SF_DECL.search(text, m.end())  # the declaration this route decorates
+            if not decl:
+                continue
+            if decl.group(1) == "class":
+                class_prefix[decl.start()] = m.group(2)
+            else:
+                methods.append((m.start(), m.group(2)))
+        events = [(c.start(), None) for c in re.finditer(r"\bclass\s+\w+", text)] + methods
+        prefix = ""
+        for pos, path in sorted(events):
+            if path is None:
+                prefix = class_prefix.get(pos, "")
+            else:
+                yield re.sub(r"\{(\w+)[^}]*\}", r"[\1]", join(prefix, path)), f
+
+
 def cmd(command, repo):
     out = subprocess.run(command, shell=True, cwd=repo, capture_output=True, text=True, check=True)
     for line in out.stdout.splitlines():
         tok = line.strip().split()
         if tok and tok[0].startswith("/"):
             yield join(tok[0]), None
+
+
+ADAPTER_FUNCS = {"next-app": next_app, "tanstack": tanstack, "nestjs": nestjs, "symfony": symfony}
 
 
 def inventory(harness, repo, allow_cmd=False):
@@ -106,12 +141,12 @@ def inventory(harness, repo, allow_cmd=False):
                     notes.append(f"{name}: routes_cmd not run (pass --allow-cmd after reading it)")
                     continue
                 found = cmd(app.get("routes_cmd", ""), repo)
-            elif kind in ("next-app", "tanstack", "nestjs") and root:
+            elif kind in ADAPTER_FUNCS and root:
                 path = repo / root
                 if not path.exists():
                     notes.append(f"{name}: root {root} not found under {repo}")
                     continue
-                found = {"next-app": next_app, "tanstack": tanstack, "nestjs": nestjs}[kind](path)
+                found = ADAPTER_FUNCS[kind](path)
             else:
                 notes.append(f"{name}: unknown adapter {kind!r} or no root")
                 continue
@@ -232,6 +267,13 @@ def self_test():
             "@Controller('auth')\nclass A {\n @Post('/login') a(){}\n @Get() b(){}\n}\n"
             "@Controller({ path: 'order', version: '1' })\nclass B {\n @Delete(':id') c(){}\n}\n")
         assert sorted(r for r, _ in nestjs(repo / "api")) == ["/auth", "/auth/login", "/order/[id]"]
+        (repo / "sf").mkdir()
+        (repo / "sf/OrderController.php").write_text(
+            "#[Route('/orders', name: 'order_')]\nclass OrderController {\n"
+            "  #[Route('/{id<\\d+>}', name: 'show')]\n  public function show() {}\n"
+            "  #[Route(path: '/new')]\n  public function create() {}\n}\n"
+            "class Legacy {\n  /** @Route(\"/legacy/{slug}\") */\n  public function old() {}\n}\n")
+        assert sorted(r for r, _ in symfony(repo / "sf")) == ["/legacy/[slug]", "/orders/[id]", "/orders/new"]
         assert matches("/auth/login", "/auth/*") and matches("/auth", "/auth/*")
         assert not matches("/authx", "/auth/*") and not matches("/items", "/items/[id]")
         assert stale_since(repo, "--output=/tmp/x", ["a"])  # rejected before git runs

@@ -17,7 +17,8 @@ executor:
 attester: { resource: {repo path} }           # optional, deterministic
 # apps: one entry per app; `routes` picks the routes_inventory.py adapter:
 #   next-app (root = the app/ dir) | tanstack (root = routeTree.gen.ts)
-#   | nestjs (root = the source dir) | cmd (routes_cmd prints one route per line)
+#   | nestjs (root = the source dir) | symfony (root = src/Controller)
+#   | cmd (routes_cmd prints one route per line)
 # base_url_env / base_path are for the executor; surfaces stay app-relative.
 apps:
   - { name: {app}, base_url_env: {ENV_VAR}, routes: {next-app}, root: {apps/x/src/app} }

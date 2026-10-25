@@ -157,7 +157,7 @@ exactly as before.
 | `VERIFICATION.md` | bundle root, `type: Verification Harness` | the project CLI (OKF §10 `executor` / `receipt` / `attester`), apps + route adapters, roles, test accounts (env var **names** only), `safety.allowed_targets: [local, worktree]`, `proof.freshness_days` |
 
 `scripts/routes_inventory.py` lists every app's routes deterministically (adapters
-`next-app`, `tanstack`, `nestjs`, plus a free `routes_cmd`), so `coverage` measures
+`next-app`, `tanstack`, `nestjs`, `symfony`, plus a free `routes_cmd`), so `coverage` measures
 three levels from the routes up, not from what the LLM noticed:
 
 - **documented** — a feature concept exists;

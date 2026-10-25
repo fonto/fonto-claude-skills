@@ -44,7 +44,7 @@ python3 <plugin>/scripts/routes_inventory.py <bundle> --features --repo .
 ```
 
 It reads the `apps` of `VERIFICATION.md`, runs one deterministic adapter per app
-(`next-app`, `tanstack`, `nestjs`; `cmd` only with `--allow-cmd`, after you have
+(`next-app`, `tanstack`, `nestjs`, `symfony`; `cmd` only with `--allow-cmd`, after you have
 shown the user the declared `routes_cmd` and they agreed to run it), and prints:
 - `## routes` — `app<TAB>route<TAB>features`; `-` means **unmapped**: no feature's
   `surfaces` covers it (exact match, or prefix for a `/x/*` surface);

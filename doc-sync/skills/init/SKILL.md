@@ -146,9 +146,11 @@ directory; use bundle-relative paths (leading `/`) for cross-directory links
 - **Locate the user-facing apps and their routers** — this becomes `VERIFICATION.md`.
   For each app: a Next app router (`app/**/page.tsx`) → `next-app`, root = that `app/`
   dir; a TanStack Router `routeTree.gen.ts` → `tanstack`; a NestJS source dir
-  (`@Controller`) → `nestjs`; anything else whose framework can print its routes
-  (`bin/console debug:router`, `php artisan route:list`) → `cmd` with a `routes_cmd`
-  that prints one path per line. Note the e2e runner and its spec directory, the
+  (`@Controller`) → `nestjs`; Symfony controllers with `#[Route]` attributes or
+  `@Route` annotations → `symfony`, root = `src/Controller`; anything else whose
+  framework can print its routes (`php artisan route:list`, or Symfony routes kept
+  in YAML via `bin/console debug:router`) → `cmd` with a `routes_cmd` that prints
+  one path per line. Note the e2e runner and its spec directory, the
   test accounts the specs use (email + the **name** of the env var holding the
   password — never open a `.env*` file to find it), and the role vocabulary the code
   uses (a user-type or role enum in the code is the default source).

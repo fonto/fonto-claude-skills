@@ -159,7 +159,7 @@ def parse_source_ids(fm):
 
 # --- verification extension (doc-sync 2.4) ---------------------------------
 
-ADAPTERS = ("next-app", "tanstack", "nestjs", "cmd")
+ADAPTERS = ("next-app", "tanstack", "nestjs", "symfony", "cmd")
 SAFE_TARGETS = {"local", "worktree"}
 # Subsections of `## Verification` that must be free of [To confirm] for a
 # feature to count as drivable; Sub-features and Gotchas may keep open items.
