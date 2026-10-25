@@ -21,6 +21,7 @@ docs portable, diffable, and readable by both humans and agents without tooling.
 |-----|-----------|---------|
 | `generated: { by, at }` | `init`, `update`, `ingest-existing-docs` | who produced this concept and when |
 | `verified: [{ by, at }]` | `challenge` (`process:`), `interview` (`human:`) | who confirmed it, append-only |
+| `verified: [{ by, at, sha }]` | the project CLI, replaying on `main` only — never doc-sync | a live proof (2.4+, see [Verification](#verification-24)) |
 | `sources: [...]` | `ingest-existing-docs`, `interview`, `update` | the addressable materials a concept derives from |
 | `stale_after` | `interview` | when a human confirmation expires (+12 months) |
 | `status` | `challenge` | `draft` / `stable` / `deprecated`; absent means `stable` |
@@ -140,6 +141,42 @@ recorded a human confirmation).
 AGENT.md pointer. The other skills run this for you when concepts are added or removed;
 invoke it manually only if the indexes ever look stale.
 
+## Verification (2.4)
+
+A feature concept can also say **how to reach it, drive it and prove it works**, so
+an agent can verify a change as a user would. This is declarative and static in 2.4:
+nothing launches the app. All of it is optional — a bundle without it behaves
+exactly as before.
+
+| Piece | Where | What |
+|-------|-------|------|
+| `surfaces` | Feature frontmatter | `- { app, route }` — where a user reaches it; `/x/*` for a prefix |
+| `roles` | Feature frontmatter | the roles that reach it, vocabulary from `VERIFICATION.md` |
+| `tests` | Feature frontmatter | repo paths of the e2e specs that drive it |
+| `## Verification` | Feature body, last | Sub-features · How to get to it · Driving it · Proof · Gotchas (pstack's feature map) |
+| `VERIFICATION.md` | bundle root, `type: Verification Harness` | the project CLI (OKF §10 `executor` / `receipt` / `attester`), apps + route adapters, roles, test accounts (env var **names** only), `safety.allowed_targets: [local, worktree]`, `proof.freshness_days` |
+
+`scripts/routes_inventory.py` lists every app's routes deterministically (adapters
+`next-app`, `tanstack`, `nestjs`, plus a free `routes_cmd`), so `coverage` measures
+three levels from the routes up, not from what the LLM noticed:
+
+- **documented** — a feature concept exists;
+- **drivable** — `surfaces` + a `## Verification` whose access, driving and proof
+  steps carry no `[To confirm]` (**partly-drivable** when some remain);
+- **proven** — a `verified` entry `{ by: <proof.actor>, at, sha }` newer than the
+  concept, younger than `freshness_days` (30 by default), with no commit since
+  `sha` on a surface's source files.
+
+Who writes what: `init` creates `VERIFICATION.md` and fills the keys; `update`
+rewrites `## Verification` only when the diff touches a declared surface or a cited
+handle; `interview` asks for preconditions, accounts and the observable end state;
+`challenge` checks statically that cited routes, selectors and specs still exist and
+triages each gap (doc error / harness gap / product regression / `verified-unreachable`);
+`map` enriches the `features/index.md` bullets with apps · roles · e2e · level.
+**No doc-sync skill ever writes a proof entry.** Only a replay on `main` does, so
+parallel worktree agents never collide on the same frontmatter; they attach their
+evidence to their PR. The live replay skill (`doc-sync:prove`) is planned for 2.5.
+
 ## Epistemic Tags
 
 Generated documentation uses tags to indicate the reliability of each assertion:
@@ -185,6 +222,7 @@ docs/okf/                    # the OKF Knowledge Bundle
 ├── OVERVIEW.md              # type: Overview      — vision, stack, macro architecture
 ├── ARCHITECTURE.md          # type: Architecture  — components, dependencies, data flows
 ├── COVERAGE.md              # type: Coverage Report (auto-generated)
+├── VERIFICATION.md          # type: Verification Harness (optional, 2.4)
 ├── features/                # type: Feature — one concept per functional block
 │   ├── index.md             # RESERVED — listing (no frontmatter)
 │   └── auth.md
@@ -264,6 +302,7 @@ doc-sync/
 │   ├── FEATURE.md
 │   ├── DECISION.md
 │   ├── TABLE.md
+│   ├── VERIFICATION.md
 │   ├── index.md
 │   └── log.md
 ├── scripts/
@@ -271,7 +310,9 @@ doc-sync/
 │   ├── make_v1_fixture.sh      # scaffold a v1 docs/ tree (for migrate)
 │   ├── make_ingest_fixture.sh  # scaffold a repo + stray doc (for ingest-existing-docs)
 │   ├── make_okf01_fixture.sh   # scaffold an OKF v0.1 bundle (for the 0.1 → 0.2 migration)
-│   └── validate_okf.py         # check a generated bundle for OKF v0.2 conformance
+│   ├── validate_okf.py         # check a generated bundle for OKF v0.2 conformance
+│   ├── routes_inventory.py     # list app routes, map them to features, compute levels
+│   └── test_verification.py    # tests for the two scripts above
 ├── LICENSE
 └── README.md
 ```
@@ -313,7 +354,22 @@ cd /tmp/okf-test && claude --plugin-dir /path/to/doc-sync
 # 3. mechanically validate the generated bundle (no LLM)
 python3 /path/to/doc-sync/scripts/validate_okf.py /tmp/okf-test/docs/okf
 #    errors → non-conformant; warnings → broken links / non-ISO log dates
+#    pass the project root as 2nd arg to also check that tests[] paths exist
+
+# 4. the scripts' own tests (stdlib unittest)
+python3 -m unittest discover -s doc-sync/scripts -p 'test_*.py'
 ```
+
+## Changelog
+
+- **2.4.0** — verification extension, declarative and static: optional `surfaces` /
+  `roles` / `tests` keys and a `## Verification` section on features, a
+  `VERIFICATION.md` harness concept, `routes_inventory.py`, three coverage levels
+  (documented / drivable / proven), enriched `features/index.md` bullets, a static
+  drivability check in `challenge`, validator warnings for the new keys, `migrate`
+  preserves them. `parse_flow_map` now strips one matched quote pair, not every quote.
+- **2.3.1** — `init` no longer writes `status`; footnotes only key a source.
+- **2.3.0** — OKF v0.2 conformance and trust signals (`generated`, `verified`, `sources`).
 
 ## License
 
