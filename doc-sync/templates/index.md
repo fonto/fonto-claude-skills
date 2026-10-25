@@ -38,3 +38,11 @@ okf_version: "0.2"
 # {Group Heading}
 
 - [{concept}.md]({concept}.md) — {one-line description}
+
+--- features/index.md WHEN THE BUNDLE HAS A VERIFICATION.md (still bullets, OKF §8) ---
+# Features
+
+> Coverage levels: documented · partly-drivable · drivable · proven {date}.
+> Full table: [COVERAGE.md](../COVERAGE.md#verification).
+
+- [{concept}.md]({concept}.md) — {one-line description} · {apps, comma-separated} · {roles} · e2e {N} · {level}

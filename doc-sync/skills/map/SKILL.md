@@ -44,6 +44,18 @@ is delimited and replaced, never duplicated.
   group heading, then one bullet per concept in that directory.
 - Use `templates/index.md` as the pattern. Omit `COVERAGE.md` from the listings
   (meta-file, not reference material).
+- **Enriched feature bullets — only when `<bundle>/VERIFICATION.md` exists.** Keep
+  `features/index.md` a bullet list (OKF §8 — never a table), one line per feature:
+  `- [T](f.md) — description · apps · roles · e2e N · level`, where apps are the
+  distinct `surfaces[].app`, roles the `roles` list, N the length of `tests`, and
+  level the one computed by `python3 <plugin>/scripts/routes_inventory.py <bundle>
+  --features --repo <project root>` (`documented` · `partly-drivable` · `drivable`
+  · `proven YYYY-MM-DD`). Omit an empty field rather than printing `-`. Add, under
+  the heading, the one-line legend and the link to `../COVERAGE.md#verification`
+  from `templates/index.md` (skip the link if `COVERAGE.md` does not exist yet).
+  Sanitize these values exactly like descriptions. List `VERIFICATION.md` in the
+  root `index.md` under Overview. Without a `VERIFICATION.md`, bullets stay
+  `[link](path.md) — description`, unchanged.
 
 ### Step 3: Select target file for the CLAUDE.md pointer
 
@@ -91,7 +103,8 @@ Report: "Bundle indexes regenerated and map updated in `<filename>` — N concep
 - Never touch content outside the `<!-- doc-sync:map:start/end -->` delimiters
 - Bundle-root `index.md` is the ONLY index with frontmatter (`okf_version` only);
   subdirectory `index.md` files have none
-- Descriptions must be one line, under 80 characters, no epistemic tags
+- Descriptions must be one line, under 80 characters, no epistemic tags (the
+  enriched `· apps · roles · e2e · level` suffix comes after and is not counted)
 - Row order: index → OVERVIEW → ARCHITECTURE → data → features (alphabetical) →
   decisions (numbered) → log
 - Omit `<bundle>/COVERAGE.md` from both the index.md files and the CLAUDE.md map

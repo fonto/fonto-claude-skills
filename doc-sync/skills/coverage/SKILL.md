@@ -36,6 +36,27 @@ Scan the project and list all:
 
 Group by functional domain (not by file type).
 
+**Routes come from a script when the bundle has a `VERIFICATION.md`.** Do not list
+user-facing routes yourself; run, from the project root:
+
+```bash
+python3 <plugin>/scripts/routes_inventory.py <bundle> --features --repo .
+```
+
+It reads the `apps` of `VERIFICATION.md`, runs one deterministic adapter per app
+(`next-app`, `tanstack`, `nestjs`, `symfony`; `cmd` only with `--allow-cmd`, after you have
+shown the user the declared `routes_cmd` and they agreed to run it), and prints:
+- `## routes` — `app<TAB>route<TAB>features`; `-` means **unmapped**: no feature's
+  `surfaces` covers it (exact match, or prefix for a `/x/*` surface);
+- `## features` — per feature: level, apps, roles, e2e count, last proof (marked
+  `(stale)` when a commit since its `sha` touched a surface's source file),
+  surfaces matching no route, `tests` files missing.
+
+Your only judgment call on routes is grouping the unmapped ones into proposed
+features. Routes don't capture behaviour without a route (crons, queues, webhooks,
+emails): keep inventorying those as modules, as above. Without a `VERIFICATION.md`,
+skip the script and inventory routes as before.
+
 ### Step 2: Inventory Documented Surface
 
 Inventory concepts by reading the `type` field in each concept's frontmatter.
@@ -67,6 +88,18 @@ Then flag freshness issues, without treating either as an error:
   rewritten after it was last confirmed)
 - `stale_after` present and `today >= stale_after` → **expired**
 
+**Verification levels** (only when the bundle has a `VERIFICATION.md`), one per
+Feature concept, taken from the script output — never re-judged:
+- **documented** — the concept exists, no `surfaces` or no `## Verification`;
+- **partly-drivable** — `surfaces` + `## Verification`, but `[To confirm]` left in
+  How to get / Driving / Proof, or no driving step;
+- **drivable** — `surfaces` + a `## Verification` with driving steps and no
+  `[To confirm]` in those three subsections (Sub-features and Gotchas may keep some);
+- **proven** — a `verified` entry `{ by: <proof.actor>, at, sha }` newer than
+  `generated.at`, younger than `proof.freshness_days` (default 30), and no commit
+  since `sha` on a surface's source files. It stays 0 % until a project CLI replays
+  features on `main`; doc-sync itself never writes that entry.
+
 ### Step 3: Generate COVERAGE.md
 
 Write or overwrite `<bundle>/COVERAGE.md` (it is itself a concept — keep its
@@ -76,7 +109,7 @@ frontmatter `type: Coverage Report`):
 ---
 type: Coverage Report
 title: Documentation Coverage
-generated: { by: doc-sync/2.3.1, at: <ISO 8601 UTC> }
+generated: { by: doc-sync/2.4.0, at: <ISO 8601 UTC> }
 confidence: code
 ---
 
@@ -99,6 +132,8 @@ Last updated: YYYY-MM-DD
 - Architecture Decision Records: N
 - Trust tiers: N unverified (X%), N machine-confirmed (X%), N human-reviewed (X%)
 - Freshness: N void (rewritten after verification), N expired (past `stale_after`)
+- Verification (if VERIFICATION.md): N features — N documented, N partly-drivable,
+  N drivable (X%), N proven (X%); N routes, N unmapped
 
 ## Coverage by Functional Block
 
@@ -135,6 +170,23 @@ Overall documentation confidence: X%
 Void and expired are signals to act on, not errors: re-run `challenge` to
 re-confirm a void concept, or `interview` to refresh an expired one.
 
+## Verification
+
+Only when the bundle has a `VERIFICATION.md`; omit the section otherwise.
+
+| Feature | Apps | Roles | e2e | Level | Last proof | Gaps |
+|---------|------|-------|----:|-------|-----------|------|
+| [auth](features/auth.md) | web, api | guest, member | 4 | drivable | — | — |
+| [orders](features/orders.md) | web, api | member, admin | 0 | partly-drivable | — | 2 [To confirm] in How to get / Driving |
+
+### Unmapped routes
+
+Routes no feature's `surfaces` covers, grouped into proposed features:
+
+| App | Route | Proposed feature |
+|-----|-------|------------------|
+| web | /referrals/[code] | referrals (new) |
+
 ## Action Items
 
 ### High Priority
@@ -161,4 +213,7 @@ Stage and commit: `docs: coverage report updated`
 - **Prioritize action items** — undocumented high-traffic blocks first, suspect inferences in edge cases last
 - **Track trends** — if previous COVERAGE.md exists, note improvements or regressions
 - **Be honest** — a project with 100% coverage but 80% `[Inference]` is not well-documented
+- **Routes are counted, not guessed** — when `VERIFICATION.md` exists, the route list and
+  every verification level come from `routes_inventory.py`; never add or drop a route by hand
+- **Never write `verified`** — coverage reports proofs, it does not record them
 - **Review before commit:** show the diff and confirm with the user before running `git commit`.

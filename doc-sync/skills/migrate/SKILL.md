@@ -82,7 +82,7 @@ For each non-reserved `.md` (everything except `index.md`/`log.md`):
   - `type` — from the table above
   - `title` — the H1, or a humanized filename
   - `description` — first sentence of the "Purpose" section, or the H1
-  - `generated: { by: doc-sync/2.3.1, at: <date> }` — `by` is that literal
+  - `generated: { by: doc-sync/2.4.0, at: <date> }` — `by` is that literal
     verbatim, never read from `plugin.json` (the plugin lives outside the
     documented project, so that read fails); `at` is an existing
     `Last updated:` line, else the file's last git commit date, else today
@@ -116,7 +116,7 @@ For each non-reserved `.md` (everything except `index.md`/`log.md`):
 #### Step 4: Lift decisions into frontmatter
 
 For each `<bundle>/decisions/*.md`:
-- Frontmatter: `type: Decision`, `generated: { by: doc-sync/2.3.1, at:
+- Frontmatter: `type: Decision`, `generated: { by: doc-sync/2.4.0, at:
   <the file's **Date:** line> }`, `status` mapped onto the OKF vocabulary
   (`Proposed→draft`, `Accepted→stable`, `Deprecated`/`Superseded→deprecated`),
   `confidence` per the mapping above. Do not write a `source:` key.
@@ -184,13 +184,22 @@ Applies when Dispatch found `source/index.md` declaring `okf_version: "0.1"`.
 For each non-reserved `.md` file in `<bundle>/` (everything except `index.md`
 and `log.md`):
 
+#### Step 0: Stray files without a `type`
+
+A v0.1 bundle may hold files a human folded in by hand (design specs, notes) with
+no frontmatter, or frontmatter without `type` — both are OKF errors. Give each the
+minimum: prepend (or complete) a frontmatter with `type` inferred from its folder
+or content (`Design Spec` for a `specs/` file, else `Reference`) and `title` from
+the H1. Keep any keys already there and the body verbatim; add nothing else — no
+`generated`, no `verified`.
+
 #### Step 1: `timestamp` → `generated`
 
 - Replace the frontmatter key `timestamp: X` with `generated: { by: doc-sync, at:
   X }`. Preserve `X` verbatim — only the key shape changes, not the date.
 - `by` is the bare producer name `doc-sync`, with **no version number**. The
   doc-sync version that actually produced this file was never recorded and is
-  now unknowable; writing the current plugin version (`doc-sync/2.3.1`) here
+  now unknowable; writing the current plugin version (`doc-sync/2.4.0`) here
   would misattribute this file's provenance to a version that never generated
   it. Leave a short comment above the key stating this, so a later pass does not
   "helpfully" fill in a version number:
@@ -247,6 +256,14 @@ and `log.md`):
 - Do not write `stale_after` either — it is only ever set alongside a
   `verified: human:` entry, and this step adds none.
 
+#### Step 5b: Verification keys — carry over, never create
+
+- If a concept already has `surfaces`, `roles`, `tests` or a `## Verification`
+  section (doc-sync 2.4+), keep them byte-for-byte, and keep `VERIFICATION.md`.
+- Do not add them where they are absent: filling them is `init` / `update` /
+  `interview` work, done afterwards on purpose. Never add a proof entry
+  (`{ by, at, sha }`) — same rule as Step 5.
+
 #### Step 6: Reserved files
 
 - Leave `log.md` untouched entirely.
@@ -274,6 +291,8 @@ and `log.md`):
   the current plugin version
 - **No `verified` entry is ever added** — retroactive verification does not
   exist; every upgraded concept starts `unverified`
+- Verification keys (`surfaces`, `roles`, `tests`, `## Verification`,
+  `VERIFICATION.md`) are preserved when present and never invented
 - Nothing moves — this is an in-place rewrite, not a directory restructuring
 
 ---

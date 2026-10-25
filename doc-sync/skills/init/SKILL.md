@@ -31,7 +31,7 @@ title: <display name>
 description: <one-line summary>
 resource: <repo path or URL>  # optional
 tags: [<tag>, ...]
-generated: { by: doc-sync/2.3.1, at: <ISO 8601 UTC> }
+generated: { by: doc-sync/2.4.0, at: <ISO 8601 UTC> }
 sources:                      # optional; omit entirely when there's no addressable source
   - id: <slug>
     resource: <repo path or URL>       # REQUIRED within an entry
@@ -39,10 +39,15 @@ sources:                      # optional; omit entirely when there's no addressa
     author: <human:<id> | team:<id>>
     last_modified: <YYYY-MM-DD>
 confidence: <code | inference | to-confirm | declared | mixed>
+# Feature concepts only, when the bundle has a VERIFICATION.md (see Step 3):
+surfaces:                     # where a user reaches it — never an `id:` key here
+  - { app: <app name from VERIFICATION.md>, route: </app-relative/[param]> }
+roles: [<role from VERIFICATION.md>, ...]
+tests: [<repo path of an e2e spec>, ...]
 ---
 ```
 
-`generated` is always written — `by: doc-sync/2.3.1` **verbatim, exactly as
+`generated` is always written — `by: doc-sync/2.4.0` **verbatim, exactly as
 written here**, `at` the current UTC timestamp. Do not try to read the version
 from `plugin.json`: the plugin lives outside the documented project and that
 read will fail. The literal is bumped with the plugin release.
@@ -88,6 +93,7 @@ Every substantive statement MUST be prefixed with one of:
 ├── OVERVIEW.md              # concept · type: Overview
 ├── ARCHITECTURE.md          # concept · type: Architecture
 ├── COVERAGE.md              # concept · type: Coverage Report
+├── VERIFICATION.md          # concept · type: Verification Harness (if user-facing apps)
 ├── features/
 │   ├── index.md            # RESERVED — no frontmatter
 │   └── <block>.md          # concept · type: Feature
@@ -137,6 +143,22 @@ directory; use bundle-relative paths (leading `/`) for cross-directory links
       rather than asserting `[Code]`.
     - **constraints** — primary key, foreign keys, `UNIQUE`, `DEFAULT`, `CHECK`
     - FKs become links to other table concepts.
+- **Locate the user-facing apps and their routers** — this becomes `VERIFICATION.md`.
+  For each app: a Next app router (`app/**/page.tsx`) → `next-app`, root = that `app/`
+  dir; a TanStack Router `routeTree.gen.ts` → `tanstack`; a NestJS source dir
+  (`@Controller`) → `nestjs`; Symfony controllers with `#[Route]` attributes or
+  `@Route` annotations → `symfony`, root = `src/Controller`; anything else whose
+  framework can print its routes (`php artisan route:list`, or Symfony routes kept
+  in YAML via `bin/console debug:router`) → `cmd` with a `routes_cmd` that prints
+  one path per line. Note the e2e runner and its spec directory, the
+  test accounts the specs use (email + the **name** of the env var holding the
+  password — never open a `.env*` file to find it), and the role vocabulary the code
+  uses (a user-type or role enum in the code is the default source).
+- Write `<bundle>/VERIFICATION.md` from `templates/VERIFICATION.md` with what you
+  found (declarative only — do not run any app or CLI), then run
+  `python3 <plugin>/scripts/routes_inventory.py <bundle> --repo .` and use its output
+  as the route list for the functional blocks. If the project has no user-facing app
+  with a supported router, skip `VERIFICATION.md` and the verification keys entirely.
 
 ### Step 3: Generate the Bundle
 
@@ -169,6 +191,25 @@ starting points. Adapt to the specific project. **Every concept gets frontmatter
   entry when there's no addressable path or URL. **A footnote may only key a
   `sources[].id`** — a reference to another concept in this bundle is a plain
   markdown link (`[users](/data/users.md)`), never a footnote
+- **Verification** (only when `VERIFICATION.md` was written in Step 2):
+  - `surfaces` — the routes from `routes_inventory.py` that belong to this block,
+    written exactly as the script prints them; `/x/*` for an API prefix;
+  - `roles` — the roles that reach it, from the `VERIFICATION.md` vocabulary;
+  - `tests` — e2e specs that drive it: match each spec's `page.goto(...)` /
+    `visit(...)` targets against the surfaces;
+  - a `## Verification` section, last in the file, per `templates/FEATURE.md`:
+    sub-feature ids (cite test-case ids from an existing test plan, don't copy it),
+    every entry point, driving steps, the observable end state, gotchas. Take
+    selectors from the existing specs and helpers (`[Code: <file>]`); a selector you
+    deduced from JSX or i18n is `[Inference]`; a precondition you could not find
+    (seed data, account, inbox) is `[To confirm]`. Keep it under ~40 lines.
+  - Never write a password, token or `.env` value — only env var **names**.
+
+**VERIFICATION.md** (`type: Verification Harness`, from Step 2): the executor block
+describes the project CLI if one exists; if none does, keep the keys with the
+intended commands and say in the body, `[To confirm]`, that the CLI is still to be
+built. `safety.allowed_targets` is `[local, worktree]`. `proof.freshness_days`
+defaults to 30.
 
 **data/<table>.md** (`type: "<DB> Table"`, one per table/collection from Step 2):
 - `resource:` canonical URI (e.g. `postgres://<db>/public/users`)
@@ -274,7 +315,10 @@ the actual path, e.g. `docs/okf`):
   `generated: { by, at }` entry; reserved files (`index.md`, `log.md`) carry
   none (root `index.md` → `okf_version: "0.2"` only)
 - Never write `verified` — a freshly generated concept is unverified until
-  `challenge` or `interview` confirms it
+  `challenge` or `interview` confirms it; a live proof (`{ by, at, sha }`) is only
+  ever written by a replay on `main`, never by `init`
+- Verification keys are optional; a structure under `surfaces`, `roles` or `tests`
+  never uses an `id:` key (the validator would read it as a source)
 - Every section must have at least one epistemic tag; `confidence` in frontmatter
   summarizes them
 - One table/collection = one concept in `data/`; FKs become links
