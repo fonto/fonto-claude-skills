@@ -184,6 +184,15 @@ Applies when Dispatch found `source/index.md` declaring `okf_version: "0.1"`.
 For each non-reserved `.md` file in `<bundle>/` (everything except `index.md`
 and `log.md`):
 
+#### Step 0: Stray files without a `type`
+
+A v0.1 bundle may hold files a human folded in by hand (design specs, notes) with
+no frontmatter, or frontmatter without `type` — both are OKF errors. Give each the
+minimum: prepend (or complete) a frontmatter with `type` inferred from its folder
+or content (`Design Spec` for a `specs/` file, else `Reference`) and `title` from
+the H1. Keep any keys already there and the body verbatim; add nothing else — no
+`generated`, no `verified`.
+
 #### Step 1: `timestamp` → `generated`
 
 - Replace the frontmatter key `timestamp: X` with `generated: { by: doc-sync, at:
